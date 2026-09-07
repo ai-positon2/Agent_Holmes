@@ -1,0 +1,1032 @@
+<title>Pacing Desk</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F4F6F9; --surface:#FFFFFF; --surface2:#EBEFF5; --raise:#FFFFFF;
+  --ink:#12161C; --muted:#5C6675; --faint:#8A94A4;
+  --line:#DCE2EC; --line2:#C7D0DE;
+  --accent:#22346B; --accent-soft:#E4E9F5;
+  --over:#A8500C; --over-bg:#FBEDE0; --over-line:#D98B3E;
+  --under:#1B5B8C; --under-bg:#E4EFF8; --under-line:#5AA3D4;
+  --ontrack:#166B45; --ontrack-bg:#E2F1E9; --ontrack-line:#5CB78C;
+  --unclear:#63548C; --unclear-bg:#EDEAF6; --unclear-line:#9C8CCB;
+  --shadow:0 1px 2px rgba(18,22,28,.05),0 4px 14px rgba(18,22,28,.05);
+  --r:10px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E1116; --surface:#161B23; --surface2:#1D242E; --raise:#1B2230;
+  --ink:#E9ECF1; --muted:#98A2B2; --faint:#6E7A8B;
+  --line:#28313D; --line2:#374253;
+  --accent:#8AA3E0; --accent-soft:#1D2740;
+  --over:#E8A05C; --over-bg:#2E2114; --over-line:#B4712C;
+  --under:#6FB4E4; --under-bg:#132434; --under-line:#3B7CAD;
+  --ontrack:#68C79A; --ontrack-bg:#12281E; --ontrack-line:#3C8C64;
+  --unclear:#B0A2E0; --unclear-bg:#211C33; --unclear-line:#7263A8;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1116; --surface:#161B23; --surface2:#1D242E; --raise:#1B2230;
+  --ink:#E9ECF1; --muted:#98A2B2; --faint:#6E7A8B;
+  --line:#28313D; --line2:#374253;
+  --accent:#8AA3E0; --accent-soft:#1D2740;
+  --over:#E8A05C; --over-bg:#2E2114; --over-line:#B4712C;
+  --under:#6FB4E4; --under-bg:#132434; --under-line:#3B7CAD;
+  --ontrack:#68C79A; --ontrack-bg:#12281E; --ontrack-line:#3C8C64;
+  --unclear:#B0A2E0; --unclear-bg:#211C33; --unclear-line:#7263A8;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink);
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+.wrap{max-width:1180px;margin:0 auto;padding:0 20px 72px}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--line);background:var(--surface)}
+.mast-in{max-width:1180px;margin:0 auto;padding:20px;display:flex;
+  flex-wrap:wrap;gap:16px;align-items:baseline;justify-content:space-between}
+h1{font-family:Archivo,sans-serif;font-weight:700;font-size:20px;letter-spacing:-.015em;
+  margin:0;display:flex;align-items:baseline;gap:10px}
+h1 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);
+  display:inline-block;transform:translateY(-2px)}
+.mast-meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:12.5px}
+.mast-meta b{color:var(--ink);font-weight:600}
+
+/* ---------- freshness / data-source band ---------- */
+.freshband{display:flex;align-items:center;gap:8px;flex-wrap:wrap;
+  margin:18px 0 14px;font-size:12px;color:var(--muted)}
+.freshband .dot2{width:6px;height:6px;border-radius:50%;background:var(--ontrack);flex:none}
+.freshband.stale .dot2{background:var(--faint)}
+.freshband b{color:var(--ink);font-weight:600}
+
+/* ---------- trend chart ---------- */
+.trend{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:14px 16px;margin-bottom:14px;box-shadow:var(--shadow)}
+.trend-top{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:6px}
+.trend-top .t{font-family:Archivo,sans-serif;font-weight:700;font-size:11px;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.trend-top .s{font-size:11.5px;color:var(--muted)}
+.trend svg{width:100%;height:auto;display:block;overflow:visible}
+.trend-note{font-size:11.5px;color:var(--muted);margin:8px 0 0}
+
+/* ---------- portfolio strip ---------- */
+.strip{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+  gap:1px;background:var(--line);border:1px solid var(--line);
+  border-radius:var(--r);overflow:hidden;margin:0 0 18px}
+.cell{background:var(--surface);padding:13px 15px}
+.cell .k{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--faint)}
+.cell .v{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:20px;font-weight:500;margin-top:3px;letter-spacing:-.02em}
+.cell .s{font-size:11.5px;color:var(--muted);margin-top:1px}
+
+/* ---------- controls ---------- */
+.controls{display:flex;gap:9px;flex-wrap:wrap;align-items:center;margin-bottom:18px}
+.chip{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;
+  padding:6px 12px;border-radius:999px;border:1px solid var(--line2);
+  background:var(--surface);color:var(--muted);cursor:pointer;
+  transition:background .12s,color .12s,border-color .12s}
+.chip:hover{border-color:var(--accent);color:var(--ink)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+:root[data-theme="dark"] .chip[aria-pressed="true"]{color:#0E1116}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) .chip[aria-pressed="true"]{color:#0E1116}}
+.chip .n{opacity:.72;margin-left:5px;font-variant-numeric:tabular-nums}
+.csvbtn{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;
+  padding:6px 12px;border-radius:8px;border:1px solid var(--line2);
+  background:var(--surface);color:var(--muted);cursor:pointer;margin-left:auto}
+.csvbtn:hover{border-color:var(--accent);color:var(--ink)}
+.csvbtn:disabled{opacity:.45;cursor:not-allowed}
+/* pickers — the primary way in, so they lead the row */
+.pickers{display:flex;gap:10px;flex-wrap:wrap;align-items:stretch;margin-bottom:12px}
+.sel{position:relative;display:flex;align-items:center;gap:9px;
+  background:var(--surface);border:1px solid var(--line2);border-radius:8px;
+  padding:0 34px 0 12px;min-width:210px;flex:1 1 210px;max-width:340px}
+.sel:focus-within{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.sel::after{content:"";position:absolute;right:14px;width:7px;height:7px;
+  border-right:1.8px solid var(--faint);border-bottom:1.8px solid var(--faint);
+  transform:translateY(-2px) rotate(45deg);pointer-events:none}
+.sel .sel-k{font-family:Archivo,sans-serif;font-size:9.5px;font-weight:700;
+  letter-spacing:.09em;text-transform:uppercase;color:var(--faint);
+  white-space:nowrap;flex:none}
+.sel select{appearance:none;-webkit-appearance:none;background:transparent;
+  border:0;outline:none;color:var(--ink);font-family:inherit;font-size:13.5px;
+  font-weight:600;padding:9px 0;width:100%;cursor:pointer}
+.sel select:disabled{color:var(--faint);cursor:not-allowed}
+.sel option{background:var(--surface);color:var(--ink);font-weight:400}
+.reset{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;
+  background:none;border:0;color:var(--accent);cursor:pointer;padding:0 4px;
+  text-decoration:underline;text-underline-offset:3px}
+.reset[hidden]{display:none!important}
+.crumb{font-size:12.5px;color:var(--muted);margin:-4px 0 14px}
+.crumb b{color:var(--ink);font-weight:600}
+
+/* ---------- client block ---------- */
+.client{background:var(--surface);border:1px solid var(--line);
+  border-radius:var(--r);margin-bottom:14px;overflow:hidden;box-shadow:var(--shadow)}
+.client>summary{list-style:none;cursor:pointer;padding:14px 16px;
+  display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.client>summary::-webkit-details-marker{display:none}
+.client>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.caret{width:9px;height:9px;border-right:1.8px solid var(--faint);
+  border-bottom:1.8px solid var(--faint);transform:rotate(-45deg);
+  transition:transform .16s;flex:none;margin-top:-3px}
+details[open]>summary .caret{transform:rotate(45deg);margin-top:-6px}
+.cname{font-family:Archivo,sans-serif;font-weight:700;font-size:15.5px;letter-spacing:-.01em}
+.csum{margin-left:auto;display:flex;gap:16px;align-items:baseline;
+  font-size:12.5px;color:var(--muted);flex-wrap:wrap}
+.csum .num{color:var(--ink);font-size:13px}
+
+/* ---------- account row ---------- */
+.acct{border-top:1px solid var(--line)}
+.acct>summary{list-style:none;cursor:pointer;padding:11px 16px 11px 30px;
+  display:grid;grid-template-columns:1fr 210px 132px 96px;gap:14px;align-items:center}
+.acct>summary::-webkit-details-marker{display:none}
+.acct>summary:hover{background:var(--surface2)}
+.acct>summary:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+.aname{display:flex;align-items:center;gap:9px;min-width:0}
+.aname .t{font-weight:600;font-size:13.5px;white-space:nowrap;
+  overflow:hidden;text-overflow:ellipsis}
+.pill{font-family:Archivo,sans-serif;font-size:9.5px;font-weight:700;
+  letter-spacing:.07em;text-transform:uppercase;padding:2.5px 7px;
+  border-radius:4px;white-space:nowrap;flex:none}
+.p-over{background:var(--over-bg);color:var(--over)}
+.p-under{background:var(--under-bg);color:var(--under)}
+.p-ok{background:var(--ontrack-bg);color:var(--ontrack)}
+.p-unclear{background:var(--unclear-bg);color:var(--unclear)}
+.badge{font-size:10.5px;font-weight:600;color:var(--over);
+  border:1px solid var(--over-line);padding:1px 5px;border-radius:4px;flex:none}
+.donebadge{font-size:10.5px;font-weight:600;color:var(--ontrack);
+  border:1px solid var(--ontrack-line);padding:1px 5px;border-radius:4px;flex:none}
+
+/* ---------- the pacing bar: this page's one real instrument ---------- */
+.bar{position:relative;height:22px;border-radius:5px;background:var(--surface2);
+  border:1px solid var(--line);overflow:hidden}
+.bar .proj{position:absolute;inset:0 auto 0 0;opacity:.26}
+.bar .spent{position:absolute;inset:0 auto 0 0}
+.bar .budgetline{position:absolute;top:-1px;bottom:-1px;width:2px;
+  background:var(--ink);opacity:.5}
+.bar .ideal{position:absolute;top:-1px;bottom:-1px;width:0;
+  border-left:2px dashed var(--faint)}
+.bar-l{font-size:10.5px;color:var(--muted);margin-top:3px;display:flex;
+  justify-content:space-between;gap:8px}
+.fig{text-align:right;font-size:12.5px;color:var(--muted)}
+.fig .big{display:block;font-family:"IBM Plex Mono",monospace;
+  font-variant-numeric:tabular-nums;font-size:14px;color:var(--ink);font-weight:500}
+
+/* ---------- expanded body ---------- */
+.body{padding:4px 16px 20px 30px;background:var(--surface2);
+  border-top:1px solid var(--line)}
+.kgrid{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.kgrid>div{background:var(--surface);padding:9px 11px;flex:1 1 116px;
+  border:1px solid var(--line);border-radius:7px}
+.kgrid .k{font-family:Archivo,sans-serif;font-size:9.5px;font-weight:600;
+  letter-spacing:.08em;text-transform:uppercase;color:var(--faint)}
+.kgrid .v{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums;
+  font-size:14.5px;margin-top:2px}
+h4{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:700;
+  letter-spacing:.1em;text-transform:uppercase;color:var(--faint);
+  margin:20px 0 8px}
+.tblhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 0 8px}
+.tblhead h4{margin:0}
+.note{border-left:3px solid var(--line2);padding:8px 12px;margin:8px 0;
+  background:var(--surface);border-radius:0 6px 6px 0;font-size:12.5px;color:var(--muted)}
+.note.warn{border-left-color:var(--over-line);color:var(--ink)}
+.note b{color:var(--ink)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:7px;background:var(--surface)}
+table{border-collapse:collapse;width:100%;font-size:12.5px;min-width:600px}
+th{font-family:Archivo,sans-serif;font-size:9.5px;font-weight:700;letter-spacing:.08em;
+  text-transform:uppercase;color:var(--faint);text-align:left;padding:8px 10px;
+  border-bottom:1px solid var(--line);white-space:nowrap;background:var(--surface)}
+th.sortable,th.sortable-move{cursor:pointer;user-select:none}
+th.sortable:hover,th.sortable-move:hover{color:var(--ink)}
+th.sortable:focus-visible,th.sortable-move:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}
+th .arw{margin-left:3px;opacity:.75;font-size:9px}
+td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.r,th.r{text-align:right}
+.cn{font-family:"IBM Plex Mono",monospace;font-size:11.5px}
+.why{color:var(--muted);font-size:11.5px;line-height:1.45}
+.amt{font-family:"IBM Plex Mono",monospace;font-weight:600;color:var(--accent);white-space:nowrap}
+.arrow{color:var(--faint);padding:0 5px}
+.tag{font-size:9.5px;font-family:Archivo,sans-serif;font-weight:600;
+  letter-spacing:.05em;text-transform:uppercase;color:var(--muted);
+  border:1px solid var(--line2);border-radius:3px;padding:1px 4px;white-space:nowrap}
+.flag{display:block;font-size:11px;color:var(--over);margin-top:2px}
+.dim{color:var(--faint)}
+.util{display:inline-block;min-width:34px}
+.empty{color:var(--muted);font-size:12.5px;padding:14px 0}
+.applycell{text-align:center;width:1%}
+.applybox{display:inline-flex;align-items:center;cursor:pointer}
+.applybox input{width:15px;height:15px;accent-color:var(--ontrack);cursor:pointer;margin:0}
+.applybox input:disabled{cursor:wait}
+tr.done{background:var(--ontrack-bg)}
+tr.done .cn,tr.done .why{text-decoration:line-through;text-decoration-color:var(--ontrack-line)}
+.foot{margin-top:26px;padding-top:16px;border-top:1px solid var(--line);
+  color:var(--faint);font-size:11.5px;line-height:1.6}
+@media (max-width:860px){
+  .acct>summary{grid-template-columns:1fr;gap:9px}
+  .fig{text-align:left}
+  .csum{margin-left:0;width:100%}
+  .csvbtn{margin-left:0}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <h1><span class="dot"></span>Pacing Desk</h1>
+    <div class="mast-meta" id="meta"></div>
+  </div>
+</header>
+
+<div class="wrap">
+  <p class="freshband" id="fresh"></p>
+  <div class="trend" id="trend" hidden></div>
+  <div class="strip" id="strip"></div>
+  <div class="pickers" id="pickers"></div>
+  <div class="controls" id="controls"></div>
+  <p class="crumb" id="crumb"></p>
+  <div id="list"></div>
+  <div id="orphans"></div>
+  <p class="foot" id="foot"></p>
+</div>
+
+<script id="payload" type="application/json">__PAYLOAD__</script>
+<script>
+(function(){
+"use strict";
+
+/* ============================================================
+   Helpers
+   ============================================================ */
+var $ = function(s){return document.querySelector(s)};
+var esc = function(s){return String(s==null?"":s).replace(/[&<>"']/g,function(c){
+  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]})};
+var m0 = function(v){return (v<0?"-$":"$")+Math.round(Math.abs(v)).toLocaleString()};
+var pc = function(v,d){return (v*100).toFixed(d==null?0:d)+"%"};
+var sum = function(arr,f){return arr.reduce(function(t,x){return t+f(x)},0)};
+var slug = function(s){
+  return String(s).toLowerCase().replace(/&/g,"and").replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-+|-+$/g,"").slice(0,120) || "x";
+};
+
+var PILL = {"WILL OVERSPEND":["p-over","over"],"WILL UNDERSPEND":["p-under","under"],
+            "ON TARGET":["p-ok","on target"],"BUDGET UNCLEAR":["p-unclear","budget unclear"]};
+var HUE = {"WILL OVERSPEND":"--over-line","WILL UNDERSPEND":"--under-line",
+           "ON TARGET":"--ontrack-line","BUDGET UNCLEAR":"--unclear-line"};
+
+/* ============================================================
+   Module state
+   ============================================================ */
+var D = JSON.parse(document.getElementById("payload").textContent);
+var DERIVED = null;               // computeDerived(D) — recomputed whenever D changes
+var DATA_SOURCE = "static";       // "static" | "live" | "history"
+var LIVE_DATE = null;             // the date meta/latest points to, once known
+var DATES = [];                   // available snapshot dates, newest first (needs db)
+var SNAP_ROLLUPS = [];            // one small rollup per recorded day, for the trend chart
+var CURRENT_F = [];               // current filter-chip definitions (for crumb() labels)
+
+var filter="all", pickClient="", pickAccount="";
+var campSort = {key:null, dir:1};
+var moveSort = {key:"amt", dir:-1};
+var movesApplied = {};            // moveDocId -> {applied, appliedAt}
+var movesUnsub = null;
+
+var dbNS = null, downloadsNS = null;
+
+/* ============================================================
+   Portfolio roll-up (ambiguous accounts excluded from money maths)
+   ============================================================ */
+function computeDerived(data){
+  var A=[]; data.clients.forEach(function(c){c.accounts.forEach(function(a){
+    a._client=c.name; A.push(a)})});
+  var solid = A.filter(function(a){return !a.ambiguous});
+  var tAll=sum(solid,function(a){return a.allocated}),
+      tSp =sum(solid,function(a){return a.spend}),
+      tPr =sum(solid,function(a){return a.projected}),
+      tCv =sum(A,function(a){return a.conv}),
+      tMv =sum(A,function(a){return a.moves.length});
+  var capped=A.filter(function(a){return a.capped}),
+      amb   =A.filter(function(a){return a.ambiguous}),
+      over  =A.filter(function(a){return a.landing==="WILL OVERSPEND"}),
+      under =A.filter(function(a){return a.landing==="WILL UNDERSPEND"}),
+      ok    =A.filter(function(a){return a.landing==="ON TARGET"});
+  var atRisk = sum(capped,function(a){return a.allocated-a.projected});
+  return {A:A,solid:solid,tAll:tAll,tSp:tSp,tPr:tPr,tCv:tCv,tMv:tMv,
+          capped:capped,amb:amb,over:over,under:under,ok:ok,atRisk:atRisk};
+}
+
+/* ============================================================
+   DB — shared documents this page reads and writes
+   snapshots/<date>                 portfolio meta + precomputed rollup
+   snapshots/<date>/clients/<slug>  one client's accounts/campaigns
+   meta/latest                      {date} — which snapshot is "today"
+   moves/<date>__<loc>__<from>__<to>  {applied, appliedAt} — shared checkbox
+   ============================================================ */
+async function loadDate(date){
+  var metaSnap = await dbNS.doc("snapshots/"+date).get();
+  if(!metaSnap.exists) throw new Error("No recorded snapshot for "+date);
+  var meta = metaSnap.data();
+  var clientsSnap = await dbNS.collection("snapshots/"+date+"/clients").get();
+  var clients = clientsSnap.docs.map(function(d){return d.data()});
+  var out = {}; Object.keys(meta).forEach(function(k){out[k]=meta[k]});
+  out.clients = clients;
+  return out;
+}
+
+// A doc id is one path segment, capped at 200 bytes — some campaign names
+// alone run past that, so the id is a short readable prefix plus a hash of
+// the full (loc, from, to) triple, never a raw concatenation of slugs.
+function hashStr(s){
+  var h=2166136261;
+  for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=(h*16777619)>>>0; }
+  return h.toString(16);
+}
+function moveDocId(date, loc, from, to){
+  var h=hashStr(loc+"|"+from+"|"+to);
+  return date+"__"+slug(loc).slice(0,24)+"__"+slug(from).slice(0,24)+"__"+h;
+}
+
+function resubscribeMoves(){
+  if(movesUnsub){ movesUnsub(); movesUnsub=null; }
+  movesApplied = {};
+  if(!dbNS){ render(); return; }
+  var q = dbNS.collection("moves").where("date","==",D.asOf);
+  movesUnsub = q.onSnapshot(function(snap){
+    var map={};
+    snap.docs.forEach(function(d){ map[d.id]=d.data(); });
+    movesApplied = map;
+    render();
+  }, function(err){ console.error("Pacing Desk: moves subscription failed", err); });
+}
+
+/* ============================================================
+   CSV export (via the downloads capability — plain <a download>
+   links are inert inside this sandbox)
+   ============================================================ */
+function csvCell(v){
+  var s=String(v==null?"":v);
+  if(/[",\n]/.test(s)) s='"'+s.replace(/"/g,'""')+'"';
+  return s;
+}
+function downloadCsv(rows, filename){
+  if(!downloadsNS) return;
+  var csv = rows.map(function(r){return r.map(csvCell).join(",")}).join("\r\n");
+  downloadsNS.save({filename:filename, data:csv}).catch(function(err){
+    if(err && err.code==="declined") return;
+    console.error("Pacing Desk: CSV save failed", err);
+  });
+}
+function exportAccountsCsv(){
+  var rows=[["Client","Account","Channels","Status","Capped","Budget unclear","Allocated","Spend",
+             "Projected","Pacing %","Ideal %","Spend/day","Budget/day","Utilisation %","Moves"]];
+  D.clients.forEach(function(c){
+    c.accounts.filter(keep).forEach(function(a){
+      rows.push([c.name, a.name, a.channels||"Google", a.landing, a.capped?"Yes":"No", a.ambiguous?"Yes":"No",
+        a.allocated, a.spend, a.ambiguous?"":a.projected,
+        (a.pacing*100).toFixed(1), (a.ideal*100).toFixed(1),
+        a.currentDaily, a.budgetDaily, (a.utilisation*100).toFixed(1), a.moves.length]);
+    });
+  });
+  downloadCsv(rows, "pacing-desk_"+D.asOf+"_accounts.csv");
+}
+function exportCampaignsCsv(key){
+  var parts=key.split("||"), clientName=parts[0], acctName=parts[1], acct=null;
+  D.clients.forEach(function(c){ if(c.name===clientName) c.accounts.forEach(function(a){
+    if(a.name===acctName) acct=a; }); });
+  if(!acct) return;
+  var rows=[["Location","Campaign","Type","Status","Spend","Conv","CPA","Daily cap",
+             "Used %","Search IS %","New daily","Pool"]];
+  acct.campaigns.forEach(function(c){
+    rows.push([c.loc||acct.name, c.name, c.type, c.status, c.spend, c.conv,
+      c.cpa==null?"":c.cpa, c.budget, c.util==null?"":(c.util*100).toFixed(1),
+      c.sis==null?"":(c.sis*100).toFixed(1), c.newDaily, c.pool||""]);
+  });
+  downloadCsv(rows, "pacing-desk_"+D.asOf+"_"+slug(acctName)+"_campaigns.csv");
+}
+
+/* ============================================================
+   Static chrome — meta strip, freshness, trend, filter chips
+   ============================================================ */
+function paintMeta(){
+  $("#meta").innerHTML =
+    '<span>Day <b>'+(D.elapsed+1)+'</b> of '+D.daysInMonth+' · '+esc(D.month)+'</span>'+
+    '<span>Ideal pacing <b class="num">'+pc(D.idealPacing,2)+'</b> ('+D.elapsed+'/'+D.daysInMonth+')</span>'+
+    '<span>Tolerance <b>+'+D.tolerance+'pp</b></span>'+
+    '<span>Data through <b>'+esc(D.dataThrough)+'</b></span>';
+}
+
+// Scopes the top strip to whatever the Client/Account pickers currently
+// select (not the quick-filter chips below — those filter the list only).
+function inScope(a){
+  if(pickClient && a._client!==pickClient) return false;
+  if(pickAccount && (a._client+"||"+a.name)!==pickAccount) return false;
+  return true;
+}
+
+function paintStrip(){
+  var A = DERIVED.A.filter(inScope);
+  var solid = A.filter(function(a){return !a.ambiguous});
+  var tAll=sum(solid,function(a){return a.allocated}), tSp=sum(solid,function(a){return a.spend}),
+      tPr=sum(solid,function(a){return a.projected}), tCv=sum(A,function(a){return a.conv}),
+      tMv=sum(A,function(a){return a.moves.length});
+  var capped=A.filter(function(a){return a.capped}),
+      over =A.filter(function(a){return a.landing==="WILL OVERSPEND"}),
+      under=A.filter(function(a){return a.landing==="WILL UNDERSPEND"});
+  var atRisk=sum(capped,function(a){return a.allocated-a.projected});
+  var clientSet={}; A.forEach(function(a){clientSet[a._client]=1;});
+  var nClients=Object.keys(clientSet).length;
+  var offTarget=over.length+under.length;
+  $("#strip").innerHTML = [
+    ['Allocated', m0(tAll), nClients+' client'+(nClients===1?'':'s')+' · '+A.length+' account'+(A.length===1?'':'s')],
+    ['Spent to date', m0(tSp), tAll? pc(tSp/tAll,1)+' of budget':'—'],
+    ['Projected month end', m0(tPr), tAll? pc(tPr/tAll)+' of budget':'—'],
+    ['Conversions', Math.round(tCv).toLocaleString(), tCv? 'CPA '+m0(tSp/tCv):'—'],
+    ['Moves suggested', String(tMv), offTarget+' account'+(offTarget===1?'':'s')+' off-target'],
+    ['At risk from caps', m0(atRisk), capped.length+' account'+(capped.length===1?'':'s')+' can’t reach budget']
+  ].map(function(r){
+    return '<div class="cell"><div class="k">'+r[0]+'</div><div class="v">'+r[1]+
+           '</div><div class="s">'+r[2]+'</div></div>'}).join("");
+}
+
+function paintFreshness(){
+  var el=$("#fresh"), html, stale=false;
+  if(DATA_SOURCE==="live"){
+    html='<span class="dot2"></span>Live — reading <b>'+esc(D.asOf)+'</b> from the shared database. '+
+         'Tomorrow’s run updates this page for every viewer without a republish.';
+  } else if(DATA_SOURCE==="history"){
+    stale=true;
+    html='<span class="dot2"></span>Viewing an earlier snapshot — <b>'+esc(D.asOf)+'</b>. '+
+         'Pick the latest date in “As of” for today’s numbers.';
+  } else {
+    stale=true;
+    html='<span class="dot2"></span>Showing the snapshot bundled when this page was published ('+esc(D.asOf)+').'+
+         (dbNS===null?' This view has no live-data connection.':' Connecting for live data…');
+  }
+  el.className = "freshband"+(stale?" stale":"");
+  el.innerHTML = html;
+}
+
+function paintTrend(){
+  var el=$("#trend");
+  if(!SNAP_ROLLUPS.length){ el.hidden=true; el.innerHTML=""; return; }
+  el.hidden=false;
+  var latest=SNAP_ROLLUPS[SNAP_ROLLUPS.length-1];
+  var days=latest.daysInMonth||30;
+  var w=1080,h=170,padL=58,padR=18,padT=16,padB=28;
+  var innerW=w-padL-padR, innerH=h-padT-padB;
+  var dayOf=function(r){return Number(r.asOf.slice(8,10))};
+  var xScale=function(day){return padL+(day-1)/Math.max(1,days-1)*innerW};
+  var maxY=Math.max(latest.tAll*1.06, (latest.tPr||0)*1.02);
+  SNAP_ROLLUPS.forEach(function(r){ if(r.tSp*1.06>maxY) maxY=r.tSp*1.06; });
+  var yScale=function(v){return padT+innerH-(v/maxY)*innerH};
+
+  var svg='<svg viewBox="0 0 '+w+' '+h+'" xmlns="http://www.w3.org/2000/svg" '+
+    'role="img" aria-label="Portfolio spend versus plan across recorded days">';
+  var yBudget=yScale(latest.tAll);
+  svg+='<line x1="'+padL+'" y1="'+yBudget.toFixed(1)+'" x2="'+(w-padR)+'" y2="'+yBudget.toFixed(1)+
+       '" stroke="var(--ink)" stroke-opacity=".35" stroke-width="1.5"/>';
+  svg+='<text x="'+(w-padR)+'" y="'+(yBudget-5).toFixed(1)+'" text-anchor="end" '+
+       'font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--muted)">'+m0(latest.tAll)+' budget</text>';
+  var ix1=xScale(1), iy1=yScale(0), ix2=xScale(days), iy2=yScale(latest.tAll);
+  svg+='<line x1="'+ix1.toFixed(1)+'" y1="'+iy1.toFixed(1)+'" x2="'+ix2.toFixed(1)+'" y2="'+iy2.toFixed(1)+
+       '" stroke="var(--faint)" stroke-width="1.5" stroke-dasharray="4 4"/>';
+  svg+='<line x1="'+padL+'" y1="'+(padT+innerH)+'" x2="'+(w-padR)+'" y2="'+(padT+innerH)+
+       '" stroke="var(--line2)" stroke-width="1"/>';
+  [1, Math.round(days/2), days].forEach(function(dnum){
+    svg+='<text x="'+xScale(dnum).toFixed(1)+'" y="'+(h-8)+'" text-anchor="middle" '+
+         'font-family="IBM Plex Mono, monospace" font-size="10" fill="var(--faint)">Day '+dnum+'</text>';
+  });
+
+  if(SNAP_ROLLUPS.length>1){
+    var pts=SNAP_ROLLUPS.map(function(r){return [xScale(dayOf(r)), yScale(r.tSp)]});
+    var pathD="M"+pts.map(function(p){return p[0].toFixed(1)+","+p[1].toFixed(1)}).join(" L");
+    var areaD=pathD+" L"+pts[pts.length-1][0].toFixed(1)+","+(padT+innerH)+
+      " L"+pts[0][0].toFixed(1)+","+(padT+innerH)+" Z";
+    svg+='<path d="'+areaD+'" fill="var(--accent-soft)"/>';
+    svg+='<path d="'+pathD+'" fill="none" stroke="var(--accent)" stroke-width="2.25"/>';
+    pts.forEach(function(p){ svg+='<circle cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+
+      '" r="3" fill="var(--accent)"/>'; });
+    var lastPt=pts[pts.length-1];
+    var projX=xScale(days), projY=yScale(latest.tPr||latest.tAll);
+    svg+='<line x1="'+lastPt[0].toFixed(1)+'" y1="'+lastPt[1].toFixed(1)+'" x2="'+projX.toFixed(1)+
+      '" y2="'+projY.toFixed(1)+'" stroke="var(--accent)" stroke-opacity=".5" stroke-width="2" stroke-dasharray="3 3"/>';
+    svg+='<circle cx="'+projX.toFixed(1)+'" cy="'+projY.toFixed(1)+
+      '" r="3.5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>';
+  } else {
+    var p0x=xScale(dayOf(latest)), p0y=yScale(latest.tSp);
+    svg+='<circle cx="'+p0x.toFixed(1)+'" cy="'+p0y.toFixed(1)+'" r="4" fill="var(--accent)"/>';
+    var projX2=xScale(days), projY2=yScale(latest.tPr||latest.tAll);
+    svg+='<line x1="'+p0x.toFixed(1)+'" y1="'+p0y.toFixed(1)+'" x2="'+projX2.toFixed(1)+
+      '" y2="'+projY2.toFixed(1)+'" stroke="var(--accent)" stroke-opacity=".5" stroke-width="2" stroke-dasharray="3 3"/>';
+    svg+='<circle cx="'+projX2.toFixed(1)+'" cy="'+projY2.toFixed(1)+
+      '" r="3.5" fill="var(--surface)" stroke="var(--accent)" stroke-width="2"/>';
+  }
+  svg+='</svg>';
+
+  el.innerHTML =
+    '<div class="trend-top"><span class="t">Spend vs. plan — '+esc(latest.month||"")+'</span>'+
+      '<span class="s">'+SNAP_ROLLUPS.length+' of '+days+' day'+(days===1?'':'s')+' recorded</span></div>'+
+    svg+
+    (SNAP_ROLLUPS.length<2?
+      '<p class="trend-note">The trend fills in as each day’s run lands in the shared database — '+
+      'only 1 snapshot recorded so far.</p>' : '');
+}
+
+function buildControls(){
+  var d=DERIVED;
+  var F = [
+    ["all","All accounts",d.A.length],
+    ["action","Needs action",d.over.length+d.under.length],
+    ["over","Overspending",d.over.length],
+    ["under","Underspending",d.under.length],
+    ["capped","Can’t reach budget",d.capped.length],
+    ["moves","Has moves",d.A.filter(function(a){return a.moves.length}).length],
+    ["unclear","Budget unclear",d.amb.length]
+  ].filter(function(f){return f[2]>0||f[0]==="all"});
+  CURRENT_F = F;
+  if(!F.some(function(f){return f[0]===filter})) filter="all";
+  $("#controls").innerHTML = F.map(function(f){
+    return '<button class="chip" data-f="'+f[0]+'" aria-pressed="'+(f[0]===filter)+'">'+
+           esc(f[1])+'<span class="n">'+f[2]+'</span></button>'}).join("") +
+    (downloadsNS ? '<button class="csvbtn" id="exportAccounts" type="button">Export accounts CSV</button>' : '');
+}
+
+/* ============================================================
+   Pickers — client / account / as-of date
+   ============================================================ */
+function buildPickers(){
+  $("#pickers").innerHTML =
+    '<label class="sel"><span class="sel-k">Client</span>'+
+      '<select id="selClient" aria-label="Client"></select></label>'+
+    '<label class="sel"><span class="sel-k">Account</span>'+
+      '<select id="selAccount" aria-label="Account"></select></label>'+
+    '<label class="sel"><span class="sel-k">As of</span>'+
+      '<select id="selAsOf" aria-label="As of date" disabled></select></label>'+
+    '<button class="reset" id="reset" hidden>Clear</button>';
+  $("#selClient").addEventListener("change", function(e){
+    pickClient=e.target.value; pickAccount=""; fillAccounts(); paintStrip(); render();
+  });
+  $("#selAccount").addEventListener("change", function(e){
+    pickAccount=e.target.value;
+    if(pickAccount && !pickClient){ pickClient=pickAccount.split("||")[0]; fillClients(); fillAccounts(); }
+    paintStrip(); render();
+  });
+  $("#selAsOf").addEventListener("change", function(e){ switchDate(e.target.value); });
+  $("#reset").addEventListener("click", function(){
+    pickClient=""; pickAccount=""; filter="all";
+    Array.prototype.forEach.call(document.querySelectorAll("#controls .chip"), function(c){
+      c.setAttribute("aria-pressed", String(c.dataset.f==="all"))});
+    paintStrip();
+    fillClients(); fillAccounts(); render();
+  });
+}
+
+function fillClients(){
+  var o=['<option value="">All clients ('+D.clients.length+')</option>'];
+  D.clients.forEach(function(c){
+    var need=c.accounts.filter(function(a){return a.landing!=="ON TARGET"}).length;
+    o.push('<option value="'+esc(c.name)+'"'+(c.name===pickClient?" selected":"")+'>'+
+      esc(c.name)+' — '+c.accounts.length+' acct'+(c.accounts.length===1?'':'s')+
+      (need?' · '+need+' off-target':'')+'</option>');
+  });
+  $("#selClient").innerHTML=o.join("");
+}
+
+function fillAccounts(){
+  var sel=$("#selAccount");
+  var pool=pickClient ? D.clients.filter(function(c){return c.name===pickClient}) : D.clients;
+  var n=sum(pool,function(c){return c.accounts.length});
+  var o=['<option value="">All accounts ('+n+')</option>'];
+  pool.forEach(function(c){
+    if(!pickClient) o.push('<optgroup label="'+esc(c.name)+'">');
+    c.accounts.slice().sort(function(x,y){return x.name.localeCompare(y.name)})
+      .forEach(function(a){
+        var tag = a.ambiguous ? " · budget unclear"
+                : a.landing==="ON TARGET" ? " · on target"
+                : a.landing==="WILL OVERSPEND" ? " · over" : " · under";
+        var key=c.name+"||"+a.name;
+        o.push('<option value="'+esc(key)+'"'+(key===pickAccount?" selected":"")+'>'+
+               esc(a.name)+tag+'</option>');
+      });
+    if(!pickClient) o.push('</optgroup>');
+  });
+  sel.innerHTML=o.join("");
+  sel.disabled = n===0;
+}
+
+function fillAsOf(){
+  var sel=$("#selAsOf");
+  if(!DATES.length){ sel.innerHTML='<option>'+esc(D.asOf)+'</option>'; sel.disabled=true; return; }
+  sel.disabled=false;
+  sel.innerHTML=DATES.map(function(dt){
+    return '<option value="'+esc(dt)+'"'+(dt===D.asOf?" selected":"")+'>'+
+           esc(dt)+(dt===LIVE_DATE?" (latest)":"")+'</option>';
+  }).join("");
+}
+
+async function switchDate(date){
+  if(date===D.asOf || !dbNS) return;
+  var sel=$("#selAsOf"); sel.disabled=true;
+  try{
+    var hist=await loadDate(date);
+    setD(hist, date===LIVE_DATE ? "live" : "history");
+  }catch(err){
+    console.error("Pacing Desk: could not load "+date, err);
+  }finally{
+    sel.disabled=false;
+  }
+}
+
+function crumb(){
+  var b=$("#reset");
+  if(!pickClient && !pickAccount && filter==="all"){
+    $("#crumb").textContent=""; b.hidden=true; return;
+  }
+  b.hidden=false;
+  var parts=[];
+  if(pickAccount) parts.push("<b>"+esc(pickAccount.split("||")[1])+"</b>");
+  else if(pickClient) parts.push("<b>"+esc(pickClient)+"</b>");
+  else parts.push("All clients");
+  var f=CURRENT_F.filter(function(x){return x[0]===filter})[0];
+  if(f && filter!=="all") parts.push(esc(f[1]).toLowerCase());
+  $("#crumb").innerHTML="Showing "+parts.join(" · ");
+}
+
+function keep(a){
+  if(pickClient && a._client!==pickClient) return false;
+  if(pickAccount && (a._client+"||"+a.name)!==pickAccount) return false;
+  if(filter==="all") return true;
+  if(filter==="action") return a.landing==="WILL OVERSPEND"||a.landing==="WILL UNDERSPEND";
+  if(filter==="over") return a.landing==="WILL OVERSPEND";
+  if(filter==="under") return a.landing==="WILL UNDERSPEND";
+  if(filter==="capped") return a.capped;
+  if(filter==="moves") return a.moves.length>0;
+  if(filter==="unclear") return a.ambiguous;
+  return true;
+}
+
+/* ============================================================
+   The pacing bar — this page's one real instrument
+   ============================================================ */
+function bar(a){
+  var scale=Math.max(1, a.projectedPct, a.pacing)*1.04;
+  var hue="var("+(HUE[a.landing]||"--line2")+")";
+  var w=function(v){return Math.max(0,Math.min(100,(v/scale)*100))};
+  return '<div><div class="bar">'+
+    '<div class="proj" style="width:'+w(a.projectedPct)+'%;background:'+hue+'"></div>'+
+    '<div class="spent" style="width:'+w(a.pacing)+'%;background:'+hue+'"></div>'+
+    '<div class="ideal" style="left:'+w(a.ideal)+'%" title="Ideal pacing '+pc(a.ideal,2)+'"></div>'+
+    '<div class="budgetline" style="left:'+w(1)+'%" title="100% of budget"></div>'+
+  '</div><div class="bar-l"><span>spent '+pc(a.pacing,1)+'</span>'+
+    '<span class="dim">ideal '+pc(a.ideal,1)+'</span>'+
+    '<span>proj '+pc(a.projectedPct)+'</span></div></div>';
+}
+
+/* ============================================================
+   Expanded detail — moves (with shared apply state) + campaigns (sortable)
+   ============================================================ */
+function sortArrow(state, key){
+  return state.key===key ? (state.dir>0?' <span class="arw">▲</span>':' <span class="arw">▼</span>') : '';
+}
+
+function movesTable(a){
+  if(!a.moves.length) return '<p class="empty">No campaign move clears the '+
+    '$5/day floor here — the account-level budget is the lever.</p>';
+  var multi = a.moves.some(function(m){return m.loc && m.loc!==a.name});
+  var showApply = !!dbNS;
+  var rows = a.moves.map(function(m){
+    var loc = m.loc || a.name;
+    var id = moveDocId(D.asOf, loc, m.from, m.to);
+    var st = movesApplied[id];
+    return {m:m, loc:loc, id:id, applied: !!(st && st.applied)};
+  });
+  if(moveSort.key==="amt"){
+    rows.sort(function(x,y){return (x.m.amt-y.m.amt)*moveSort.dir});
+  }
+  return '<div class="scroll"><table><thead><tr>'+
+    (multi?'<th>Location</th>':'')+
+    '<th class="r sortable-move" data-sort="amt" tabindex="0">$/day'+sortArrow(moveSort,"amt")+'</th>'+
+    '<th>From</th><th>To</th><th>Why</th>'+
+    (showApply?'<th class="applycell">Applied</th>':'')+
+    '</tr></thead><tbody>'+rows.map(function(r){
+      var m=r.m;
+      return '<tr class="'+(r.applied?"done":"")+'" data-move-id="'+esc(r.id)+'" '+
+        'data-loc="'+esc(r.loc)+'" data-from="'+esc(m.from)+'" data-to="'+esc(m.to)+'" data-amt="'+m.amt+'">'+
+        (multi?'<td>'+esc(r.loc)+'</td>':'')+
+        '<td class="r amt">'+m0(m.amt)+'</td>'+
+        '<td class="cn">'+esc(m.from)+'</td>'+
+        '<td class="cn">'+esc(m.to)+'</td>'+
+        '<td class="why">'+esc(m.why)+'</td>'+
+        (showApply?'<td class="applycell"><label class="applybox">'+
+          '<input type="checkbox" aria-label="Mark move applied"'+(r.applied?" checked":"")+'></label></td>':'')+
+        '</tr>'}).join("")+
+    '</tbody></table></div>';
+}
+
+var CAMP_SORT_GETTERS = {
+  name:function(r){return r.c.name.toLowerCase()},
+  type:function(r){return (r.c.type||"").toLowerCase()},
+  spend:function(r){return r.c.spend},
+  conv:function(r){return r.c.conv||0},
+  cpa:function(r){return r.c.cpa==null?Infinity:r.c.cpa},
+  budget:function(r){return r.c.budget||0},
+  util:function(r){return r.c.util||0},
+  sis:function(r){return r.c.sis==null?-1:r.c.sis},
+  delta:function(r){return r.delta}
+};
+
+function campTable(a){
+  var pools = {};
+  a.campaigns.forEach(function(c){ if(c.pool) pools[c.pool]=(pools[c.pool]||0)+1 });
+  var hasPool = Object.keys(pools).length>0;
+  var multi = a.campaigns.some(function(c){return c.loc && c.loc!==a.name});
+  var rows = a.campaigns.map(function(c){ return {c:c, delta:c.newDaily-c.budget}; });
+  if(campSort.key && CAMP_SORT_GETTERS[campSort.key]){
+    var g=CAMP_SORT_GETTERS[campSort.key];
+    rows.sort(function(x,y){
+      var vx=g(x), vy=g(y);
+      if(typeof vx==="string") return vx.localeCompare(vy)*campSort.dir;
+      return (vx-vy)*campSort.dir;
+    });
+  }
+  var th=function(key,label,right){
+    return '<th class="sortable'+(right?' r':'')+'" data-sort="'+key+'" tabindex="0">'+
+           esc(label)+sortArrow(campSort,key)+'</th>';
+  };
+  var rhtml = rows.map(function(r){
+    var c=r.c, d=r.delta;
+    var delta = (!c.active||Math.abs(d)<1) ? '<span class="dim">—</span>'
+      : '<span style="color:var('+(d>0?'--ontrack':'--over')+')">'+(d>0?'+':'')+m0(d)+'</span>';
+    return '<tr>'+
+      (multi?'<td>'+esc(c.loc)+'</td>':'')+
+      '<td class="cn">'+esc(c.name)+
+        (c.pool?' <span class="tag" title="Shared budget pool">pool: '+esc(c.pool)+'</span>':'')+
+        (c.flags||[]).map(function(f){return '<span class="flag">'+esc(f)+'</span>'}).join("")+
+      '</td>'+
+      '<td><span class="tag">'+esc(c.type)+'</span></td>'+
+      '<td class="r num">'+m0(c.spend)+'</td>'+
+      '<td class="r num">'+(c.conv||0)+'</td>'+
+      '<td class="r num">'+(c.cpa!=null?m0(c.cpa):'<span class="dim">—</span>')+'</td>'+
+      '<td class="r num">'+(c.budget?m0(c.budget):'<span class="dim">—</span>')+'</td>'+
+      '<td class="r num"><span class="util">'+(c.util?pc(c.util):'<span class="dim">—</span>')+'</span></td>'+
+      '<td class="r num">'+(c.sis!=null?pc(c.sis):'<span class="dim">—</span>')+'</td>'+
+      '<td class="r num">'+delta+'</td></tr>'}).join("");
+  return (hasPool?'<p class="note">Shared budget pools in this account: <b>'+
+      Object.keys(pools).map(esc).join(", ")+
+      '</b>. Campaigns drawing on one pool cannot trade budget with each other, '+
+      'and the pool is counted once in the account total.</p>':'')+
+    '<div class="tblhead"><h4 style="margin:0">Campaigns ('+a.campaigns.length+')</h4>'+
+      (downloadsNS?'<button class="csvbtn" data-camp-csv="'+esc(a._client)+'||'+esc(a.name)+
+        '" type="button">Export campaigns CSV</button>':'')+
+    '</div>'+
+    '<div class="scroll"><table><thead><tr>'+
+    (multi?'<th>Location</th>':'')+
+    th("name","Campaign")+th("type","Type")+th("spend","Spend",true)+th("conv","Conv",true)+
+    th("cpa","CPA",true)+th("budget","Daily cap",true)+th("util","Used",true)+
+    th("sis","Search IS",true)+th("delta","Change",true)+
+    '</tr></thead><tbody>'+rhtml+'</tbody></table></div>';
+}
+
+function detail(a){
+  var k=[];
+  k.push(["Allocated",m0(a.allocated)]);
+  k.push(["Spent",m0(a.spend)]);
+  if(!a.ambiguous){
+    k.push(["Projected",m0(a.projected)]);
+    k.push([a.gap<0?"Short by":"Over by",m0(Math.abs(a.gap))]);
+  }
+  k.push(["Spend / day",m0(a.currentDaily)]);
+  if(!a.ambiguous) k.push(["Needs / day",m0(a.requiredDaily)]);
+  k.push(["Budget / day",m0(a.budgetDaily)]);
+  k.push(["Used",pc(a.utilisation)]);
+  k.push(["Active days left",String(a.daysLeft)]);
+  k.push(["Conversions",String(a.conv)]);
+  k.push(["CPA",a.cpa!=null?m0(a.cpa):"—"]);
+  if(a.targetCpa) k.push(["Target CPA",m0(a.targetCpa)]);
+  k.push(["Runs",esc(a.schedule)]);
+  k.push(["Channels",esc(a.channels||"Google")]);
+
+  var notes=(a.notes||[]).map(function(n){
+    var warn=/looks wrong|Cannot reach|not spending at all|Guardrails/i.test(n);
+    return '<p class="note'+(warn?' warn':'')+'">'+
+      esc(n).replace(/\*(.+?)\*/g,"<b>$1</b>")+'</p>'}).join("");
+
+  var moveCount=a.moves.length;
+  var appliedCount=0;
+  if(dbNS && moveCount){
+    a.moves.forEach(function(m){
+      var st=movesApplied[moveDocId(D.asOf, m.loc||a.name, m.from, m.to)];
+      if(st && st.applied) appliedCount++;
+    });
+  }
+
+  return '<div class="body">'+
+    '<div class="kgrid">'+k.map(function(x){
+      return '<div><div class="k">'+x[0]+'</div><div class="v">'+x[1]+'</div></div>'}).join("")+
+    '</div>'+ notes +
+    '<h4>Recommended moves'+(dbNS&&moveCount?' — '+appliedCount+'/'+moveCount+' applied':'')+'</h4>'+
+    movesTable(a)+
+    campTable(a)+
+  '</div>';
+}
+
+/* ============================================================
+   Render — the client/account list
+   ============================================================ */
+function render(){
+  var html="";
+  D.clients.forEach(function(c){
+    var accts=c.accounts.filter(keep);
+    if(!accts.length) return;
+    var s=accts.filter(function(a){return !a.ambiguous});
+    var al=sum(s,function(a){return a.allocated}), sp=sum(s,function(a){return a.spend}),
+        pr=sum(s,function(a){return a.projected});
+    var need=accts.filter(function(a){return a.landing!=="ON TARGET"}).length;
+    var mv=sum(accts,function(a){return a.moves.length});
+    html+='<details class="client" open><summary>'+
+      '<span class="caret"></span><span class="cname">'+esc(c.name)+'</span>'+
+      '<span class="csum">'+
+        '<span>'+accts.length+' account'+(accts.length===1?'':'s')+
+          (need?' · <b style="color:var(--over)">'+need+' off-target</b>':'')+
+          (mv?' · '+mv+' move'+(mv===1?'':'s'):'')+'</span>'+
+        (al?'<span class="num">'+m0(sp)+' / '+m0(al)+'</span>'+
+            '<span>projects <span class="num">'+pc(pr/al)+'</span>'+
+            (s.length<accts.length?' <span class="dim">(excl. '+
+               (accts.length-s.length)+' unclear)</span>':'')+'</span>'
+         :'<span class="dim">budget figures unconfirmed</span>')+
+      '</span></summary>';
+    accts.forEach(function(a){
+      var p=PILL[a.landing]||["p-ok",a.landing.toLowerCase()];
+      var open = (pickAccount && (a._client+"||"+a.name)===pickAccount) ? " open" : "";
+      var appliedAll = false;
+      if(dbNS && a.moves.length){
+        appliedAll = a.moves.every(function(m){
+          var st=movesApplied[moveDocId(D.asOf, m.loc||a.name, m.from, m.to)];
+          return st && st.applied;
+        });
+      }
+      html+='<details class="acct"'+open+'><summary>'+
+        '<span class="aname"><span class="caret"></span>'+
+          '<span class="t">'+esc(a.name)+'</span>'+
+          '<span class="pill '+p[0]+'">'+p[1]+'</span>'+
+          (a.channels && a.channels!=="Google"?'<span class="tag" title="Channels allocated in the Budget Tracker — this dashboard only tracks Google spend">'+esc(a.channels)+'</span>':'')+
+          (a.capped?'<span class="badge" title="Daily caps cannot reach the monthly budget">cap</span>':'')+
+          (a.moves.length?(appliedAll?
+             '<span class="donebadge" title="Every suggested move is checked off">'+a.moves.length+' applied</span>':
+             '<span class="tag">'+a.moves.length+' move'+(a.moves.length===1?'':'s')+'</span>'):'')+
+        '</span>'+
+        (a.ambiguous?'<span class="fig dim">budget figure unconfirmed</span>':bar(a))+
+        '<span class="fig"><span class="big">'+m0(a.spend)+'</span>of '+m0(a.allocated)+'</span>'+
+        '<span class="fig"><span class="big">'+m0(a.currentDaily)+'</span>'+
+          (a.ambiguous?'per day':'→ '+m0(a.requiredDaily)+'/day')+'</span>'+
+      '</summary>'+detail(a)+'</details>';
+    });
+    html+='</details>';
+  });
+  $("#list").innerHTML = html ||
+    '<p class="empty">No account matches that combination — try clearing the filter.</p>';
+  crumb();
+}
+
+/* ============================================================
+   Portfolio warnings ("orphan" spend) + footer — repainted with D
+   ============================================================ */
+function paintOrphans(){
+  var el=$("#orphans");
+  var blocks=[];
+  if(D.portfolioWarnings && D.portfolioWarnings.length){
+    var tot=D.portfolioWarnings.reduce(function(t,w){
+      var m=w.match(/\$([\d,]+)/); return t+(m?parseFloat(m[1].replace(/,/g,"")):0)},0);
+    blocks.push('<h4>Spending outside the Budget Tracker</h4>'+
+      '<div class="client" style="padding:14px 16px"><p class="note warn">'+
+      '<b>'+m0(tot)+'</b> spent month-to-date by accounts that have no Google budget row. '+
+      'They are excluded from every figure above.</p>'+
+      D.portfolioWarnings.map(function(w){return '<p class="note">'+esc(w)+'</p>'}).join("")+
+      '</div>');
+  }
+  if(D.otherChannels && D.otherChannels.length){
+    blocks.push('<h4>Other channels this dashboard doesn’t cover</h4>'+
+      '<div class="client" style="padding:14px 16px"><p class="note">'+
+      'This page reads the Google Ads export only. The Budget Tracker also allocates budget on '+
+      'other channels for accounts above — not reflected in any figure here:</p>'+
+      D.otherChannels.map(function(o){
+        return '<p class="note"><b>'+esc(o.client)+'</b> — '+esc(o.account)+
+          ' on <b>'+esc(o.channel)+'</b>, '+m0(o.allocated)+' allocated</p>'}).join("")+
+      '</div>');
+  }
+  el.innerHTML = blocks.join("");
+}
+
+function paintFoot(){
+  $("#foot").innerHTML =
+    'Ideal pacing is (today−1)÷days in month, with a +'+D.tolerance+'pp tolerance. '+
+    'Month-end projection is derived from actual spend per active day, never from the daily cap — '+
+    'most campaigns never spend their full cap. Budget moves stay inside a single location and net to zero. '+
+    'Daily caps, campaign status and impression share are read from the Google Ads export; '+
+    'allocations from the Budget Tracker. Recommendations are a draft — verify before applying.';
+}
+
+/* ============================================================
+   Swap the active dataset (embedded snapshot, live db snapshot,
+   or a historical one) and repaint everything that depends on it.
+   ============================================================ */
+function setD(newD, source){
+  D=newD; DERIVED=computeDerived(D); DATA_SOURCE=source;
+  paintMeta(); paintStrip(); paintFreshness(); paintTrend(); paintOrphans(); paintFoot();
+  buildControls(); fillClients(); fillAccounts(); fillAsOf();
+  resubscribeMoves();
+  render();
+}
+
+/* ============================================================
+   Delegated interaction — sortable headers + shared "applied" checkbox
+   + per-account CSV export, all live inside the re-rendered list
+   ============================================================ */
+$("#list").addEventListener("click", function(e){
+  var cb = e.target.closest(".applybox input");
+  if(cb){
+    if(!dbNS) return;
+    var tr = cb.closest("tr");
+    var id = tr.dataset.moveId;
+    var cur = movesApplied[id];
+    var next = !(cur && cur.applied);
+    cb.disabled = true;
+    dbNS.doc("moves/"+id).set({
+      date: D.asOf, loc: tr.dataset.loc, from: tr.dataset.from, to: tr.dataset.to,
+      amt: Number(tr.dataset.amt), applied: next, appliedAt: next ? new Date().toISOString() : null
+    }).catch(function(err){
+      console.error("Pacing Desk: could not save move state", err);
+      cb.disabled = false;
+    });
+    return;
+  }
+  var csvBtn = e.target.closest("[data-camp-csv]");
+  if(csvBtn){ exportCampaignsCsv(csvBtn.dataset.campCsv); return; }
+  var mth = e.target.closest("th.sortable-move");
+  if(mth){
+    var mk=mth.dataset.sort;
+    moveSort.dir = moveSort.key===mk ? moveSort.dir*-1 : -1;
+    moveSort.key = mk; render(); return;
+  }
+  var th = e.target.closest("th.sortable");
+  if(th){
+    var k=th.dataset.sort;
+    campSort.dir = campSort.key===k ? campSort.dir*-1 : (k==="name"||k==="type" ? 1 : -1);
+    campSort.key = k; render(); return;
+  }
+});
+$("#list").addEventListener("keydown", function(e){
+  if(e.key!=="Enter" && e.key!==" ") return;
+  var th=e.target.closest("th.sortable, th.sortable-move");
+  if(!th) return;
+  e.preventDefault(); th.click();
+});
+$("#controls").addEventListener("click", function(e){
+  if(e.target.closest("#exportAccounts")){ exportAccountsCsv(); return; }
+  var b=e.target.closest(".chip");
+  if(!b) return;
+  filter=b.dataset.f;
+  Array.prototype.forEach.call(document.querySelectorAll("#controls .chip"), function(c){
+    c.setAttribute("aria-pressed", String(c===b))});
+  render();
+});
+
+/* ============================================================
+   Boot: paint instantly from the bundled snapshot, then upgrade
+   to the shared database when this view can run it.
+   ============================================================ */
+buildPickers();
+setD(D, "static");
+
+(async function(){
+  try{ dbNS = await window.claude.use("db"); }catch(e){ dbNS=null; }
+  if(dbNS){
+    try{
+      var snapsSnap = await dbNS.collection("snapshots").get();
+      var rollups = snapsSnap.docs.map(function(d){return d.data()});
+      rollups.sort(function(a,b){return a.asOf<b.asOf?-1:a.asOf>b.asOf?1:0});
+      SNAP_ROLLUPS = rollups;
+      DATES = snapsSnap.docs.map(function(d){return d.id}).sort().reverse();
+
+      var latestSnap = await dbNS.doc("meta/latest").get();
+      if(latestSnap.exists && latestSnap.data() && latestSnap.data().date){
+        LIVE_DATE = latestSnap.data().date;
+        var liveD = await loadDate(LIVE_DATE);
+        setD(liveD, "live");
+      } else {
+        paintTrend(); fillAsOf();
+      }
+    }catch(e){ console.error("Pacing Desk: db bootstrap failed", e); }
+  }
+  try{ downloadsNS = await window.claude.use("downloads"); }catch(e){ downloadsNS=null; }
+  if(downloadsNS){ buildControls(); render(); } // reveal CSV buttons once available
+})();
+
+})();
+</script>
