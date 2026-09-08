@@ -95,6 +95,77 @@ def _pct(v) -> float | None:
         return None
 
 
+def load_export_sheet(path: str | Path) -> pd.DataFrame:
+    """Load the auto-refreshing "All Accounts Spend Data" Google Sheet
+    (Supermetrics, `Data` tab) — same output contract as load_export(),
+    built from a different but now largely-equivalent column set:
+
+        Account | Date | Campaign name | Campaign status | Budget name |
+        Bidding strategy | Configured budget | Impressions | Clicks | Cost |
+        Conversions | Total conversion value | Impression share |
+        Search rank lost impression share | Search budget lost impression share
+
+    Two differences from load_export() worth knowing:
+      - No `Campaign type` column. categories.py infers the category from the
+        campaign NAME first and only falls back to campaign_type, so this
+        costs little; campaign_type comes through as "" -> "Unknown".
+      - `Budget name` is populated on EVERY row here (often equal to the
+        campaign's own name when the campaign is NOT actually shared),
+        instead of being blank/'--' for a non-shared campaign as in the
+        primary export. A pool name identical to its own campaign name is
+        cleared to "" so the shared-pool dedup logic in engine.py doesn't
+        treat every campaign as its own one-member pool.
+    """
+    wb = openpyxl.load_workbook(path, data_only=True)
+    ws = wb["Data"] if "Data" in wb.sheetnames else wb.worksheets[0]
+    rows = list(ws.iter_rows(values_only=True))
+    hdr = [str(c).strip() if c is not None else "" for c in rows[0]]
+    df = pd.DataFrame(rows[1:], columns=hdr)
+    df = df[df["Account"].notna()].copy()
+
+    num = lambda c: pd.to_numeric(df[c], errors="coerce").fillna(0.0) if c in df else 0.0
+    campaign = df["Campaign name"].astype(str).str.strip()
+    if "Budget name" in df:
+        bname = df["Budget name"].astype(str).str.strip()
+        bname = bname.where(bname != campaign, "")  # own-name pool == not shared
+    else:
+        bname = ""
+
+    out = pd.DataFrame({
+        "date": pd.to_datetime(df["Date"], errors="coerce"),
+        "account_raw": df["Account"].astype(str).str.strip(),
+        "campaign": campaign,
+        "campaign_type": "",
+        "status": (df["Campaign status"].astype(str).str.strip()
+                   if "Campaign status" in df else ""),
+        "bid_strategy": (df["Bidding strategy"].astype(str).str.strip()
+                         if "Bidding strategy" in df else ""),
+        "budget": num("Configured budget"),
+        "budget_name": bname,
+        "cost": num("Cost"),
+        "conversions": num("Conversions"),
+        "impressions": num("Impressions"),
+        "clicks": num("Clicks"),
+        "conv_value": num("Total conversion value"),
+        "search_is": (pd.to_numeric(df["Impression share"], errors="coerce")
+                      if "Impression share" in df else None),
+    })
+    return out[out["date"].notna()].reset_index(drop=True)
+
+
+def load_any_export(path: str | Path) -> pd.DataFrame:
+    """Peek at the header row and dispatch to the matching loader, so
+    callers don't need to know which shape a given file is in."""
+    wb = openpyxl.load_workbook(path, data_only=True, read_only=True)
+    ws = wb["Data"] if "Data" in wb.sheetnames else wb.worksheets[0]
+    hdr_row = next(ws.iter_rows(min_row=1, max_row=1, values_only=True))
+    hdr = {str(c).strip() for c in hdr_row if c is not None}
+    wb.close()
+    if "Configured budget" in hdr:
+        return load_export_sheet(path)
+    return load_export(path)
+
+
 def load_export(path: str | Path) -> pd.DataFrame:
     """-> date | account_raw | campaign | campaign_type | status | bid_strategy
           | budget | cost | conversions | impressions | clicks | search_is

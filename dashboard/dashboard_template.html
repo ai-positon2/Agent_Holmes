@@ -193,6 +193,14 @@ h4{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:700;
   margin:20px 0 8px}
 .tblhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin:20px 0 8px}
 .tblhead h4{margin:0}
+.camp-detail{margin-top:16px}
+.camp-detail>summary{cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px;
+  font-family:Archivo,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--faint)}
+.camp-detail>summary:hover{color:var(--ink)}
+.camp-detail>summary::-webkit-details-marker{display:none}
+.camp-detail>summary .caret{margin-top:0}
+.camp-detail[open]>summary .caret{transform:rotate(45deg)}
 .note{border-left:3px solid var(--line2);padding:8px 12px;margin:8px 0;
   background:var(--surface);border-radius:0 6px 6px 0;font-size:12.5px;color:var(--muted)}
 .note.warn{border-left-color:var(--over-line);color:var(--ink)}
@@ -793,6 +801,32 @@ function campTable(a){
     '</tr></thead><tbody>'+rhtml+'</tbody></table></div>';
 }
 
+function categoryTable(a){
+  var cats = a.categories || [];
+  if(!cats.length) return '<p class="empty">No category rollup for this account.</p>';
+  var multi = cats.some(function(c){return c.loc && c.loc!==a.name});
+  var rows = cats.map(function(c){
+    var d = c.newDaily - c.budget;
+    var delta = (!c.active||Math.abs(d)<1) ? '<span class="dim">—</span>'
+      : '<span style="color:var('+(d>0?'--ontrack':'--over')+')">'+(d>0?'+':'')+m0(d)+'</span>';
+    return '<tr>'+
+      (multi?'<td>'+esc(c.loc)+'</td>':'')+
+      '<td class="cn">'+esc(c.name)+
+        (c.pooled?' <span class="tag" title="Shared budget pool — '+(c.members||[]).length+' campaigns">pool</span>':'')+
+      '</td>'+
+      '<td class="r num">'+m0(c.spend)+'</td>'+
+      '<td class="r num">'+(c.conv||0)+'</td>'+
+      '<td class="r num">'+(c.cpl!=null?m0(c.cpl):'<span class="dim">—</span>')+'</td>'+
+      '<td class="r num">'+(c.budget?m0(c.budget):'<span class="dim">—</span>')+'</td>'+
+      '<td class="r num"><span class="util">'+(c.util?pc(c.util):'<span class="dim">—</span>')+'</span></td>'+
+      '<td class="r num">'+delta+'</td></tr>'}).join("");
+  return '<div class="scroll"><table><thead><tr>'+
+    (multi?'<th>Location</th>':'')+
+    '<th>Category</th><th class="r">Spend</th><th class="r">Conv</th>'+
+    '<th class="r">CPL</th><th class="r">Daily cap</th><th class="r">Used</th>'+
+    '<th class="r">Change</th></tr></thead><tbody>'+rows+'</tbody></table></div>';
+}
+
 function detail(a){
   var k=[];
   k.push(["Allocated",m0(a.allocated)]);
@@ -809,6 +843,8 @@ function detail(a){
   k.push(["Conversions",String(a.conv)]);
   k.push(["CPA",a.cpa!=null?m0(a.cpa):"—"]);
   if(a.targetCpa) k.push(["Target CPA",m0(a.targetCpa)]);
+  if(a.roas!=null) k.push(["ROAS",a.roas.toFixed(2)+"x"]);
+  if(a.convValue) k.push(["Conv. value",m0(a.convValue)]);
   k.push(["Runs",esc(a.schedule)]);
   k.push(["Channels",esc(a.channels||"Google")]);
 
@@ -832,7 +868,11 @@ function detail(a){
     '</div>'+ notes +
     '<h4>Recommended moves'+(dbNS&&moveCount?' — '+appliedCount+'/'+moveCount+' applied':'')+'</h4>'+
     movesTable(a)+
-    campTable(a)+
+    '<h4>Categories ('+(a.categories?a.categories.length:0)+')</h4>'+
+    categoryTable(a)+
+    '<details class="camp-detail"><summary><span class="caret"></span>Campaign detail</summary>'+
+      campTable(a)+
+    '</details>'+
   '</div>';
 }
 

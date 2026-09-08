@@ -55,6 +55,8 @@ def build(as_of: dt.date, export: str = DEFAULT_EXPORT) -> dict:
                 "capped": a.budget_capped,
                 "notes": a.notes,
                 "targetCpl": a.target_cpa,
+                "convValue": round(a.conv_value, 2),
+                "roas": round(a.roas, 3) if a.roas else None,
                 "categories": [{
                     "name": c.campaign, "loc": c.location,
                     "spend": round(c.spend, 2), "conv": round(c.conv, 1),
@@ -101,7 +103,7 @@ if __name__ == "__main__":
     as_of = dt.date.fromisoformat(sys.argv[1]) if len(sys.argv) > 1 else dt.date.today()
     d = build(as_of)
     p = OUT / "dashboard.json"
-    p.write_text(json.dumps(d, separators=(",", ":")))
+    p.write_text(json.dumps(d, separators=(",", ":")), encoding="utf-8")
     n_a = sum(len(c["accounts"]) for c in d["clients"])
     n_c = sum(len(a["campaigns"]) for c in d["clients"] for a in c["accounts"])
     n_m = sum(len(a["moves"]) for c in d["clients"] for a in c["accounts"])

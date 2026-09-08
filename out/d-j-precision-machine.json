@@ -1,0 +1,103 @@
+{
+  "client": "D&J Precision Machine",
+  "as_of": "2026-09-08",
+  "data_through": "2026-09-08",
+  "ideal_pacing": 0.2333,
+  "allocated": 500.0,
+  "spend": 3518.27,
+  "projected": 13633.3,
+  "conversions": 10.0,
+  "warnings": [],
+  "accounts": [
+    {
+      "account": "D&J Precision Machine LLC",
+      "allocated": 500.0,
+      "spend": 3518.27,
+      "pacing": 7.0365,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2333,
+      "dev_pp": 680.32,
+      "status": "enabled",
+      "landing": "BUDGET UNCLEAR",
+      "projected": 13633.3,
+      "projected_pct": 27.2666,
+      "gap": 13133.3,
+      "days_left": 23,
+      "schedule": "Monday -Sunday",
+      "current_daily": 439.78,
+      "required_daily": 0.0,
+      "constrained_by": 0.0,
+      "notes": [
+        "*Budget figure looks wrong.* The tracker says $500 for the month, but the set daily budgets total $500 and $3,518 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
+        "Target of 20 is not a CPA \u2014 the account's blended CPA is $352. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+      ],
+      "campaigns": [
+        {
+          "campaign": "P2_PMAX_AllCategories",
+          "location": "D&J Precision Machine LLC",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 2151.16,
+          "conversions": 6.0,
+          "cpa": 358.53,
+          "vs_target": "at target",
+          "daily_budget": 300.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.896,
+          "search_impr_share": null,
+          "absorption": 0.676,
+          "score": 0.676,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "P2_Shopping_BilletAluminiumParts",
+          "location": "D&J Precision Machine LLC",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 778.01,
+          "conversions": 1.0,
+          "cpa": 778.01,
+          "vs_target": "at target",
+          "daily_budget": 100.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.973,
+          "search_impr_share": 0.233,
+          "absorption": 0.761,
+          "score": 0.505,
+          "active": true,
+          "flags": [
+            "maxing its $100/day budget (97% used)"
+          ]
+        },
+        {
+          "campaign": "P2_DJ_Brand",
+          "location": "D&J Precision Machine LLC",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 589.1,
+          "conversions": 3.0,
+          "cpa": 196.37,
+          "vs_target": "at target",
+          "daily_budget": 100.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.736,
+          "search_impr_share": 0.863,
+          "absorption": 0.492,
+          "score": 0.355,
+          "active": true,
+          "flags": []
+        }
+      ],
+      "moves": [
+        {
+          "location": "D&J Precision Machine LLC",
+          "from": "PMax",
+          "to": "Shopping",
+          "per_day": 50.0,
+          "reason": "PMax: CPL $358.53 \u2014 on target, but the weakest here. Shopping: CPL $778.01."
+        }
+      ]
+    }
+  ]
+}

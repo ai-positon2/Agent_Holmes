@@ -145,6 +145,10 @@ class AccountResult:
     # Shortfall between required_daily and what the guardrails actually allow.
     # Non-zero means "this cannot be fixed in one step without lifting a cap".
     constrained_by: float = 0.0
+    # Set only when the tracker's target turned out not to be a CPA (see
+    # target_is_cpa below) and real conversion value was available to compute it.
+    conv_value: float = 0.0
+    roas: float | None = None
 
     @property
     def cpa(self) -> float | None:
@@ -520,6 +524,12 @@ def analyse_account(client: str, account: str, alloc: float,
     moves.sort(key=lambda m: -m.amount_per_day)
     moves = moves[:config.MAX_MOVES_PER_ACCOUNT_TOTAL]
 
+    # Real ROAS, when the export carries conversion value — only meaningful
+    # once we already suspect the tracker target isn't a CPA (below).
+    conv_value_total = float(sum(r.conv_value for r in rows))
+    roas = (conv_value_total / spend) if (not target_is_cpa and spend > 0
+                                          and conv_value_total > 0) else None
+
     res = AccountResult(
         client=client, account=account, allocated=alloc, spend=spend, conv=conv,
         target_cpa=target_cpa, schedule_txt=schedule_txt or "All days",
@@ -530,7 +540,7 @@ def analyse_account(client: str, account: str, alloc: float,
         budget_ambiguous=ambiguous,
         campaigns=sorted(rows, key=lambda r: -r.spend), moves=moves,
         categories=sorted(catlist, key=lambda c: (c.location, -c.spend)), notes=[],
-        constrained_by=shortfall)
+        constrained_by=shortfall, conv_value=conv_value_total, roas=roas)
 
     # ---- notes -----------------------------------------------------------
     cur = config.CURRENCY
@@ -592,10 +602,20 @@ def analyse_account(client: str, account: str, alloc: float,
             f"categories here, not against the target in absolute terms.")
 
     if not target_is_cpa:
-        res.notes.append(
-            f"Target of {stated_target:g} is not a CPA — the account's blended CPA is "
-            f"{cur}{spend/conv:,.0f}. It is almost certainly a ROAS or CPM target sharing "
-            f"the same tracker column. Campaigns are ranked on relative CPA instead.")
+        if res.roas is not None:
+            hit = res.roas >= stated_target
+            res.notes.append(
+                f"Target of {stated_target:g} is not a CPA — the account's blended CPA is "
+                f"{cur}{spend/conv:,.0f}. Actual ROAS is *{res.roas:.2f}x* "
+                f"({cur}{res.conv_value:,.0f} conversion value / {cur}{spend:,.0f} spend), "
+                f"{'at or above' if hit else 'below'} the {stated_target:g}x target. "
+                f"Campaigns are still ranked on relative CPA — ROAS isn't tracked per "
+                f"campaign here, only at the account level.")
+        else:
+            res.notes.append(
+                f"Target of {stated_target:g} is not a CPA — the account's blended CPA is "
+                f"{cur}{spend/conv:,.0f}. It is almost certainly a ROAS or CPM target sharing "
+                f"the same tracker column. Campaigns are ranked on relative CPA instead.")
 
     dead = [r for r in rows if not r.active]
     if dead:

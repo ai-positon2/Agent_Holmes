@@ -1,0 +1,737 @@
+{
+  "client": "Phoenix",
+  "as_of": "2026-09-08",
+  "data_through": "2026-09-08",
+  "ideal_pacing": 0.2333,
+  "allocated": 5102.0,
+  "spend": 1218.77,
+  "projected": 6430.8,
+  "conversions": 60.0,
+  "warnings": [],
+  "accounts": [
+    {
+      "account": "Phoenix Rehab (NEW - WM Invoices)",
+      "allocated": 5102.0,
+      "spend": 1218.77,
+      "pacing": 0.2389,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2273,
+      "dev_pp": 0.55,
+      "status": "enabled",
+      "landing": "WILL OVERSPEND",
+      "projected": 6430.8,
+      "projected_pct": 1.2604,
+      "gap": 1328.8,
+      "days_left": 17,
+      "schedule": "Monday -Friday",
+      "current_daily": 306.59,
+      "required_daily": 228.43,
+      "constrained_by": 0.0,
+      "notes": [
+        "Spending $307/day (160% of $192/day of budget) \u2014 lands at $6,431 (126%), $1,329 over. Cut to $228/day of actual spend across 17 active days."
+      ],
+      "campaigns": [
+        {
+          "campaign": "P2-Test2-Grand-Blanc-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 107.64,
+          "conversions": 7.0,
+          "cpa": 15.38,
+          "vs_target": "beating target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.431,
+          "search_impr_share": 0.778,
+          "absorption": 0.394,
+          "score": 0.714,
+          "active": true,
+          "flags": [
+            "using only 43% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Limerick-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 96.13,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 10.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.923,
+          "search_impr_share": 0.693,
+          "absorption": 0.77,
+          "score": 0.277,
+          "active": true,
+          "flags": [
+            "0 conv on $96",
+            "spending $19/day against a $10/day cap \u2014 the budget was almost certainly changed mid-month; treat the cap as the current truth"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Oaks-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 76.8,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 10.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.536,
+          "search_impr_share": 0.45,
+          "absorption": 0.772,
+          "score": 0.277,
+          "active": true,
+          "flags": [
+            "0 conv on $77",
+            "maxing its $10/day budget (154% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Durand-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 75.61,
+          "conversions": 1.0,
+          "cpa": 75.61,
+          "vs_target": "above target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.473,
+          "search_impr_share": 0.34,
+          "absorption": 0.335,
+          "score": 0.206,
+          "active": true,
+          "flags": [
+            "using only 47% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-CACC-Lakewood-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 66.87,
+          "conversions": 2.0,
+          "cpa": 33.44,
+          "vs_target": "at target",
+          "daily_budget": 14.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.194,
+          "search_impr_share": 0.395,
+          "absorption": 0.702,
+          "score": 0.442,
+          "active": true,
+          "flags": [
+            "maxing its $14/day budget (119% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Flint-NB-CleanCampaign",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 58.99,
+          "conversions": 4.0,
+          "cpa": 14.75,
+          "vs_target": "beating target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.369,
+          "search_impr_share": 0.38,
+          "absorption": 0.399,
+          "score": 0.623,
+          "active": true,
+          "flags": [
+            "using only 37% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Limerick-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 54.61,
+          "conversions": 1.0,
+          "cpa": 54.61,
+          "vs_target": "above target",
+          "daily_budget": 10.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.092,
+          "search_impr_share": 0.775,
+          "absorption": 0.58,
+          "score": 0.307,
+          "active": true,
+          "flags": [
+            "maxing its $10/day budget (109% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Flint-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 46.98,
+          "conversions": 3.0,
+          "cpa": 15.66,
+          "vs_target": "beating target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.235,
+          "search_impr_share": 0.875,
+          "absorption": 0.183,
+          "score": 0.5,
+          "active": true,
+          "flags": [
+            "using only 23% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Oaks-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 43.4,
+          "conversions": 2.0,
+          "cpa": 21.7,
+          "vs_target": "beating target",
+          "daily_budget": 10.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.085,
+          "search_impr_share": 0.785,
+          "absorption": 0.67,
+          "score": 0.519,
+          "active": true,
+          "flags": [
+            "maxing its $10/day budget (108% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Pennsburg-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 40.03,
+          "conversions": 2.0,
+          "cpa": 20.02,
+          "vs_target": "beating target",
+          "daily_budget": 5.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.601,
+          "search_impr_share": 0.505,
+          "absorption": 0.791,
+          "score": 0.576,
+          "active": true,
+          "flags": [
+            "spending $8/day against a $5/day cap \u2014 the budget was almost certainly changed mid-month; treat the cap as the current truth"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Davison-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 38.71,
+          "conversions": 2.0,
+          "cpa": 19.36,
+          "vs_target": "beating target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.258,
+          "search_impr_share": 0.875,
+          "absorption": 0.154,
+          "score": 0.391,
+          "active": true,
+          "flags": [
+            "using only 26% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Waterford-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 38.54,
+          "conversions": 3.0,
+          "cpa": 12.85,
+          "vs_target": "beating target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.193,
+          "search_impr_share": 0.815,
+          "absorption": 0.219,
+          "score": 0.586,
+          "active": true,
+          "flags": [
+            "using only 19% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Grand-Blanc-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 37.59,
+          "conversions": 3.0,
+          "cpa": 12.53,
+          "vs_target": "beating target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.188,
+          "search_impr_share": 0.328,
+          "absorption": 0.271,
+          "score": 0.613,
+          "active": true,
+          "flags": [
+            "using only 19% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Clio-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 36.59,
+          "conversions": 4.0,
+          "cpa": 9.15,
+          "vs_target": "beating target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.183,
+          "search_impr_share": 0.875,
+          "absorption": 0.227,
+          "score": 0.654,
+          "active": true,
+          "flags": [
+            "using only 18% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-CACC-Colorado-Springs-Central-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 36.45,
+          "conversions": 1.0,
+          "cpa": 36.45,
+          "vs_target": "above target",
+          "daily_budget": 7.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.041,
+          "search_impr_share": 0.75,
+          "absorption": 0.626,
+          "score": 0.37,
+          "active": true,
+          "flags": [
+            "maxing its $7/day budget (104% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Davison-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 35.58,
+          "conversions": 2.0,
+          "cpa": 17.79,
+          "vs_target": "beating target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.178,
+          "search_impr_share": 0.323,
+          "absorption": 0.255,
+          "score": 0.446,
+          "active": true,
+          "flags": [
+            "using only 18% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Dagsboro-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 35.2,
+          "conversions": 2.0,
+          "cpa": 17.6,
+          "vs_target": "beating target",
+          "daily_budget": 4.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.76,
+          "search_impr_share": 0.323,
+          "absorption": 0.863,
+          "score": 0.635,
+          "active": true,
+          "flags": [
+            "spending $7/day against a $4/day cap \u2014 the budget was almost certainly changed mid-month; treat the cap as the current truth"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Clio-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 34.78,
+          "conversions": 2.0,
+          "cpa": 17.39,
+          "vs_target": "beating target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.29,
+          "search_impr_share": 0.388,
+          "absorption": 0.359,
+          "score": 0.485,
+          "active": true,
+          "flags": [
+            "using only 29% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Pennsburg-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 34.13,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 5.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.365,
+          "search_impr_share": 0.335,
+          "absorption": 0.831,
+          "score": 0.295,
+          "active": true,
+          "flags": [
+            "maxing its $5/day budget (137% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-CACC-Colorado-Springs-Central-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 30.06,
+          "conversions": 2.0,
+          "cpa": 15.03,
+          "vs_target": "beating target",
+          "daily_budget": 5.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.202,
+          "search_impr_share": 0.255,
+          "absorption": 0.789,
+          "score": 0.664,
+          "active": true,
+          "flags": [
+            "maxing its $5/day budget (120% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-CACC-Lakewood-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 29.72,
+          "conversions": 2.0,
+          "cpa": 14.86,
+          "vs_target": "beating target",
+          "daily_budget": 10.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.743,
+          "search_impr_share": 0.61,
+          "absorption": 0.456,
+          "score": 0.567,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "P2-Test2-Clarkston-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 25.86,
+          "conversions": 5.0,
+          "cpa": 5.17,
+          "vs_target": "beating target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.129,
+          "search_impr_share": 0.672,
+          "absorption": 0.204,
+          "score": 0.682,
+          "active": true,
+          "flags": [
+            "using only 13% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-West-Chester-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 23.7,
+          "conversions": 1.0,
+          "cpa": 23.7,
+          "vs_target": "at target",
+          "daily_budget": 5.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.185,
+          "search_impr_share": 0.505,
+          "absorption": 0.701,
+          "score": 0.424,
+          "active": true,
+          "flags": [
+            "thin data",
+            "maxing its $5/day budget (118% used)"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Goodrich-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 18.38,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.115,
+          "search_impr_share": 0.275,
+          "absorption": 0.295,
+          "score": 0.265,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 11% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-Dagsboro-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 14.27,
+          "conversions": 2.0,
+          "cpa": 7.13,
+          "vs_target": "at target",
+          "daily_budget": 2.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.784,
+          "search_impr_share": 0.802,
+          "absorption": 0.677,
+          "score": 0.453,
+          "active": true,
+          "flags": [
+            "thin data",
+            "spending $4/day against a $2/day cap \u2014 the budget was almost certainly changed mid-month; treat the cap as the current truth"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Goodrich-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 12.73,
+          "conversions": 1.0,
+          "cpa": 12.73,
+          "vs_target": "at target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.255,
+          "search_impr_share": 1.0,
+          "absorption": 0.277,
+          "score": 0.295,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 25% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test3&4&5-West-Chester-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 12.67,
+          "conversions": 1.0,
+          "cpa": 12.67,
+          "vs_target": "at target",
+          "daily_budget": 5.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.845,
+          "search_impr_share": 0.255,
+          "absorption": 0.534,
+          "score": 0.374,
+          "active": true,
+          "flags": [
+            "thin data"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Waterford-NB(New)",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 12.56,
+          "conversions": 1.0,
+          "cpa": 12.56,
+          "vs_target": "at target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.157,
+          "search_impr_share": 0.232,
+          "absorption": 0.408,
+          "score": 0.335,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 16% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Fenton-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 11.71,
+          "conversions": 1.0,
+          "cpa": 11.71,
+          "vs_target": "at target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.098,
+          "search_impr_share": 0.338,
+          "absorption": 0.208,
+          "score": 0.274,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 10% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Hartland-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 9.79,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.122,
+          "search_impr_share": 0.245,
+          "absorption": 0.397,
+          "score": 0.296,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 12% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Fenton-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 8.81,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.088,
+          "search_impr_share": 0.833,
+          "absorption": 0.108,
+          "score": 0.208,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 9% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Clarkston-NB",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 6.35,
+          "conversions": 2.0,
+          "cpa": 3.18,
+          "vs_target": "at target",
+          "daily_budget": 40.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.079,
+          "search_impr_share": 0.173,
+          "absorption": 0.184,
+          "score": 0.302,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 8% of its $40/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Durand-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 4.29,
+          "conversions": 1.0,
+          "cpa": 4.29,
+          "vs_target": "at target",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.086,
+          "search_impr_share": 0.833,
+          "absorption": 0.218,
+          "score": 0.277,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 9% of its $50/day budget"
+          ]
+        },
+        {
+          "campaign": "P2-Test2-Hartland-Brand",
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 3.24,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 50.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.032,
+          "search_impr_share": 0.812,
+          "absorption": 0.044,
+          "score": 0.188,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 3% of its $50/day budget"
+          ]
+        }
+      ],
+      "moves": [
+        {
+          "location": "Phoenix Rehab (NEW - WM Invoices)",
+          "from": "Brand",
+          "to": "Other",
+          "per_day": 19.05,
+          "reason": "Brand: CPL $15.29 \u2014 on target, but the weakest here. Other: CPL $28.40 vs $30 target."
+        }
+      ]
+    }
+  ]
+}

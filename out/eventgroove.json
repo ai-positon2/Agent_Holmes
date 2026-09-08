@@ -1,0 +1,790 @@
+{
+  "client": "Eventgroove",
+  "as_of": "2026-09-08",
+  "data_through": "2026-09-08",
+  "ideal_pacing": 0.2333,
+  "allocated": 7970.0,
+  "spend": 22597.16,
+  "projected": 93322.98,
+  "conversions": 167.97,
+  "warnings": [],
+  "accounts": [
+    {
+      "account": "US - Eventgroove Products",
+      "allocated": 3030.0,
+      "spend": 12544.75,
+      "pacing": 4.1402,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2333,
+      "dev_pp": 390.68,
+      "status": "enabled",
+      "landing": "BUDGET UNCLEAR",
+      "projected": 51765.01,
+      "projected_pct": 17.0842,
+      "gap": 48735.01,
+      "days_left": 23,
+      "schedule": "Monday -Sunday",
+      "current_daily": 1705.23,
+      "required_daily": 0.0,
+      "constrained_by": 0.0,
+      "notes": [
+        "*Budget figure looks wrong.* The tracker says $3,030 for the month, but the set daily budgets total $2,980 and $12,545 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
+        "Target of 3.2 is not a CPA \u2014 the account's blended CPA is $125. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+      ],
+      "campaigns": [
+        {
+          "campaign": "US_PMax_TROAS",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 2685.13,
+          "conversions": 4.0,
+          "cpa": 671.28,
+          "vs_target": "at target",
+          "daily_budget": 350.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.959,
+          "search_impr_share": null,
+          "absorption": 0.701,
+          "score": 0.518,
+          "active": true,
+          "flags": [
+            "maxing its $350/day budget (96% used)"
+          ]
+        },
+        {
+          "campaign": "P2_Shopping_Eventgroove_US",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 2180.06,
+          "conversions": 21.88,
+          "cpa": 99.64,
+          "vs_target": "at target",
+          "daily_budget": 400.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.681,
+          "search_impr_share": 0.413,
+          "absorption": 0.519,
+          "score": 0.526,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "US_Brand_Search_EG_Products",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 2156.87,
+          "conversions": 39.2,
+          "cpa": 55.02,
+          "vs_target": "at target",
+          "daily_budget": 600.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.514,
+          "search_impr_share": 0.984,
+          "absorption": 0.349,
+          "score": 0.537,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "US_Raffle_Tickets_Search",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1750.33,
+          "conversions": 15.5,
+          "cpa": 112.92,
+          "vs_target": "at target",
+          "daily_budget": 400.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.625,
+          "search_impr_share": 0.269,
+          "absorption": 0.531,
+          "score": 0.491,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "US_Badges_Search",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1131.45,
+          "conversions": 5.0,
+          "cpa": 226.29,
+          "vs_target": "at target",
+          "daily_budget": 330.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.49,
+          "search_impr_share": 0.1,
+          "absorption": 0.458,
+          "score": 0.374,
+          "active": true,
+          "flags": [
+            "using only 49% of its $330/day budget"
+          ]
+        },
+        {
+          "campaign": "US_Brand_Ticket_Printing_Search",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1010.48,
+          "conversions": 4.0,
+          "cpa": 252.62,
+          "vs_target": "at target",
+          "daily_budget": 350.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.412,
+          "search_impr_share": 0.756,
+          "absorption": 0.297,
+          "score": 0.268,
+          "active": true,
+          "flags": [
+            "using only 41% of its $350/day budget"
+          ]
+        },
+        {
+          "campaign": "US_General_Tickets_Search",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 971.91,
+          "conversions": 9.05,
+          "cpa": 107.39,
+          "vs_target": "at target",
+          "daily_budget": 400.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.347,
+          "search_impr_share": 0.127,
+          "absorption": 0.414,
+          "score": 0.375,
+          "active": true,
+          "flags": [
+            "using only 35% of its $400/day budget"
+          ]
+        },
+        {
+          "campaign": "US_Wristbands_Search",
+          "location": "US - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 658.52,
+          "conversions": 2.0,
+          "cpa": 329.26,
+          "vs_target": "at target",
+          "daily_budget": 150.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.627,
+          "search_impr_share": 0.1,
+          "absorption": 0.557,
+          "score": 0.416,
+          "active": true,
+          "flags": []
+        }
+      ],
+      "moves": [
+        {
+          "location": "US - Eventgroove Products",
+          "from": "Search",
+          "to": "Shopping",
+          "per_day": 192.16,
+          "reason": "Search: using 50% of its $1,280/day. Shopping: CPL $99.64."
+        },
+        {
+          "location": "US - Eventgroove Products",
+          "from": "Brand",
+          "to": "PMax",
+          "per_day": 175.0,
+          "reason": "Brand: using 48% of its $950/day. PMax: CPL $671.28."
+        }
+      ]
+    },
+    {
+      "account": "CA - Eventgroove Products",
+      "allocated": 1625.0,
+      "spend": 4077.23,
+      "pacing": 2.5091,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2333,
+      "dev_pp": 227.57,
+      "status": "enabled",
+      "landing": "BUDGET UNCLEAR",
+      "projected": 16708.41,
+      "projected_pct": 10.2821,
+      "gap": 15083.41,
+      "days_left": 23,
+      "schedule": "Monday -Sunday",
+      "current_daily": 549.18,
+      "required_daily": 0.0,
+      "constrained_by": 0.0,
+      "notes": [
+        "*Budget figure looks wrong.* The tracker says $1,625 for the month, but the set daily budgets total $1,625 and $4,077 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
+        "Target of 3.2 is not a CPA \u2014 the account's blended CPA is $194. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+      ],
+      "campaigns": [
+        {
+          "campaign": "CA_Pmax_TROAS",
+          "location": "CA - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1863.66,
+          "conversions": 6.029999999999999,
+          "cpa": 309.06,
+          "vs_target": "at target",
+          "daily_budget": 350.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.666,
+          "search_impr_share": null,
+          "absorption": 0.507,
+          "score": 0.658,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "CA_Wristbands_Search",
+          "location": "CA - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 718.73,
+          "conversions": 2.0,
+          "cpa": 359.37,
+          "vs_target": "at target",
+          "daily_budget": 150.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.685,
+          "search_impr_share": 0.383,
+          "absorption": 0.548,
+          "score": 0.54,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "CA_General_Tickets_Search",
+          "location": "CA - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 539.08,
+          "conversions": 2.0,
+          "cpa": 269.54,
+          "vs_target": "at target",
+          "daily_budget": 250.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.308,
+          "search_impr_share": 0.206,
+          "absorption": 0.359,
+          "score": 0.442,
+          "active": true,
+          "flags": [
+            "using only 31% of its $250/day budget"
+          ]
+        },
+        {
+          "campaign": "CA_Raffle_Tickets_Search",
+          "location": "CA - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 377.58,
+          "conversions": 1.8,
+          "cpa": 209.77,
+          "vs_target": "at target",
+          "daily_budget": 300.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.18,
+          "search_impr_share": 0.367,
+          "absorption": 0.248,
+          "score": 0.378,
+          "active": true,
+          "flags": [
+            "using only 18% of its $300/day budget"
+          ]
+        },
+        {
+          "campaign": "P2_Shopping_Eventgroove_CA",
+          "location": "CA - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 319.43,
+          "conversions": 1.0,
+          "cpa": 319.43,
+          "vs_target": "at target",
+          "daily_budget": 275.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.166,
+          "search_impr_share": 0.51,
+          "absorption": 0.195,
+          "score": 0.323,
+          "active": true,
+          "flags": [
+            "using only 17% of its $275/day budget"
+          ]
+        },
+        {
+          "campaign": "CA_Brand_Search",
+          "location": "CA - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 258.75,
+          "conversions": 8.2,
+          "cpa": 31.55,
+          "vs_target": "at target",
+          "daily_budget": 300.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.123,
+          "search_impr_share": 0.99,
+          "absorption": 0.063,
+          "score": 0.505,
+          "active": true,
+          "flags": [
+            "using only 12% of its $300/day budget"
+          ]
+        }
+      ],
+      "moves": [
+        {
+          "location": "CA - Eventgroove Products",
+          "from": "Search",
+          "to": "PMax",
+          "per_day": 172.5,
+          "reason": "Search: using 33% of its $700/day. PMax: CPL $309.06."
+        },
+        {
+          "location": "CA - Eventgroove Products",
+          "from": "Shopping",
+          "to": "Brand",
+          "per_day": 57.8,
+          "reason": "Shopping: using 17% of its $275/day. Brand: CPL $31.55."
+        }
+      ]
+    },
+    {
+      "account": "AU - Eventgroove Products",
+      "allocated": 1420.0,
+      "spend": 3051.6,
+      "pacing": 2.149,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2333,
+      "dev_pp": 191.57,
+      "status": "enabled",
+      "landing": "BUDGET UNCLEAR",
+      "projected": 12216.69,
+      "projected_pct": 8.6033,
+      "gap": 10796.69,
+      "days_left": 23,
+      "schedule": "Monday -Sunday",
+      "current_daily": 398.48,
+      "required_daily": 0.0,
+      "constrained_by": 0.0,
+      "notes": [
+        "*Budget figure looks wrong.* The tracker says $1,420 for the month, but the set daily budgets total $1,420 and $3,052 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
+        "Target of 3.2 is not a CPA \u2014 the account's blended CPA is $158. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+      ],
+      "campaigns": [
+        {
+          "campaign": "AU_Search_Wristbands",
+          "location": "AU - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1449.61,
+          "conversions": 4.8100000000000005,
+          "cpa": 301.37,
+          "vs_target": "at target",
+          "daily_budget": 220.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.824,
+          "search_impr_share": 0.486,
+          "absorption": 0.561,
+          "score": 0.677,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "AU_Pmax_TROAS",
+          "location": "AU - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1134.75,
+          "conversions": 6.28,
+          "cpa": 180.69,
+          "vs_target": "at target",
+          "daily_budget": 300.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.473,
+          "search_impr_share": null,
+          "absorption": 0.42,
+          "score": 0.665,
+          "active": true,
+          "flags": [
+            "using only 47% of its $300/day budget"
+          ]
+        },
+        {
+          "campaign": "AU_Search_Tickets_Raffle",
+          "location": "AU - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 186.92,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 150.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.156,
+          "search_impr_share": 0.261,
+          "absorption": 0.255,
+          "score": 0.364,
+          "active": true,
+          "flags": [
+            "using only 16% of its $150/day budget"
+          ]
+        },
+        {
+          "campaign": "P2_Shopping_Eventgroove_AU",
+          "location": "AU - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 104.08,
+          "conversions": 1.22,
+          "cpa": 85.31,
+          "vs_target": "at target",
+          "daily_budget": 300.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.087,
+          "search_impr_share": 0.417,
+          "absorption": 0.131,
+          "score": 0.351,
+          "active": true,
+          "flags": [
+            "using only 9% of its $300/day budget"
+          ]
+        },
+        {
+          "campaign": "AU_Search_Tickets_Events and General",
+          "location": "AU - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 96.53,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 100.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.161,
+          "search_impr_share": 0.169,
+          "absorption": 0.237,
+          "score": 0.356,
+          "active": true,
+          "flags": [
+            "using only 16% of its $100/day budget"
+          ]
+        },
+        {
+          "campaign": "AU_Search_Brand_Ticket River",
+          "location": "AU - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 79.71,
+          "conversions": 7.0,
+          "cpa": 11.39,
+          "vs_target": "at target",
+          "daily_budget": 350.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.028,
+          "search_impr_share": 0.984,
+          "absorption": 0.018,
+          "score": 0.505,
+          "active": true,
+          "flags": [
+            "using only 3% of its $350/day budget"
+          ]
+        }
+      ],
+      "moves": [
+        {
+          "location": "AU - Eventgroove Products",
+          "from": "Shopping",
+          "to": "PMax",
+          "per_day": 82.86,
+          "reason": "Shopping: using 9% of its $300/day. PMax: CPL $180.69."
+        },
+        {
+          "location": "AU - Eventgroove Products",
+          "from": "Brand",
+          "to": "PMax",
+          "per_day": 67.14,
+          "reason": "Brand: using 3% of its $350/day. PMax: CPL $180.69."
+        }
+      ]
+    },
+    {
+      "account": "Perforated Paper",
+      "allocated": 1205.0,
+      "spend": 2324.52,
+      "pacing": 1.9291,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2333,
+      "dev_pp": 169.57,
+      "status": "enabled",
+      "landing": "BUDGET UNCLEAR",
+      "projected": 9962.23,
+      "projected_pct": 8.2674,
+      "gap": 8757.23,
+      "days_left": 23,
+      "schedule": "Monday -Sunday",
+      "current_daily": 332.07,
+      "required_daily": 0.0,
+      "constrained_by": 0.0,
+      "notes": [
+        "*Budget figure looks wrong.* The tracker says $1,205 for the month, but the set daily budgets total $1,205 and $2,325 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
+        "Target of 3.2 is not a CPA \u2014 the account's blended CPA is $166. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+      ],
+      "campaigns": [
+        {
+          "campaign": "PP_Brand_Search",
+          "location": "Perforated Paper",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 977.64,
+          "conversions": 7.0,
+          "cpa": 139.66,
+          "vs_target": "at target",
+          "daily_budget": 550.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.254,
+          "search_impr_share": 0.744,
+          "absorption": 0.184,
+          "score": 0.505,
+          "active": true,
+          "flags": [
+            "using only 25% of its $550/day budget"
+          ]
+        },
+        {
+          "campaign": "PP_Nonbrand_Search",
+          "location": "Perforated Paper",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 645.96,
+          "conversions": 3.0,
+          "cpa": 215.32,
+          "vs_target": "at target",
+          "daily_budget": 300.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.308,
+          "search_impr_share": 0.201,
+          "absorption": 0.411,
+          "score": 0.588,
+          "active": true,
+          "flags": [
+            "using only 31% of its $300/day budget"
+          ]
+        },
+        {
+          "campaign": "PP_Pmax_CategoryLevel_March'25",
+          "location": "Perforated Paper",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 471.01,
+          "conversions": 1.0,
+          "cpa": 471.01,
+          "vs_target": "at target",
+          "daily_budget": 230.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.293,
+          "search_impr_share": null,
+          "absorption": 0.339,
+          "score": 0.427,
+          "active": true,
+          "flags": [
+            "using only 29% of its $230/day budget"
+          ]
+        },
+        {
+          "campaign": "P2_Shopping_CategoryLevel_June26",
+          "location": "Perforated Paper",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 229.91,
+          "conversions": 3.0,
+          "cpa": 76.64,
+          "vs_target": "at target",
+          "daily_budget": 125.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.263,
+          "search_impr_share": 0.27,
+          "absorption": 0.316,
+          "score": 0.484,
+          "active": true,
+          "flags": [
+            "using only 26% of its $125/day budget"
+          ]
+        }
+      ],
+      "moves": [
+        {
+          "location": "Perforated Paper",
+          "from": "Brand",
+          "to": "Non Brand",
+          "per_day": 73.8,
+          "reason": "Brand: using 25% of its $550/day. Non Brand: CPL $215.32."
+        },
+        {
+          "location": "Perforated Paper",
+          "from": "Brand",
+          "to": "Shopping",
+          "per_day": 55.69,
+          "reason": "Brand: using 25% of its $550/day. Shopping: CPL $76.64."
+        }
+      ]
+    },
+    {
+      "account": "UK - Eventgroove Products",
+      "allocated": 690.0,
+      "spend": 599.06,
+      "pacing": 0.8682,
+      "ideal": 0.2333,
+      "ideal_schedule": 0.2333,
+      "dev_pp": 63.49,
+      "status": "enabled",
+      "landing": "WILL OVERSPEND",
+      "projected": 2670.64,
+      "projected_pct": 3.8705,
+      "gap": 1980.64,
+      "days_left": 23,
+      "schedule": "Monday -Sunday",
+      "current_daily": 90.07,
+      "required_daily": 3.95,
+      "constrained_by": 0.0,
+      "notes": [
+        "Spending $90/day (13% of $690/day of budget) \u2014 lands at $2,671 (387%), $1,981 over. Cut to $4/day of actual spend across 23 active days.",
+        "Target of 3.2 is not a CPA \u2014 the account's blended CPA is $46. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+      ],
+      "campaigns": [
+        {
+          "campaign": "UK_Search_Shopping-Standard",
+          "location": "UK - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 429.51,
+          "conversions": 4.5,
+          "cpa": 95.45,
+          "vs_target": "at target",
+          "daily_budget": 100.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.537,
+          "search_impr_share": 0.68,
+          "absorption": 0.42,
+          "score": 0.693,
+          "active": true,
+          "flags": []
+        },
+        {
+          "campaign": "UK_Search_Tickets_General",
+          "location": "UK - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 111.35,
+          "conversions": 1.0,
+          "cpa": 111.35,
+          "vs_target": "at target",
+          "daily_budget": 120.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.116,
+          "search_impr_share": 0.196,
+          "absorption": 0.179,
+          "score": 0.397,
+          "active": true,
+          "flags": [
+            "using only 12% of its $120/day budget"
+          ]
+        },
+        {
+          "campaign": "UK_Search_Brand_Eventgroove",
+          "location": "UK - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 28.37,
+          "conversions": 6.0,
+          "cpa": 4.73,
+          "vs_target": "at target",
+          "daily_budget": 150.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.024,
+          "search_impr_share": 0.967,
+          "absorption": 0.017,
+          "score": 0.505,
+          "active": true,
+          "flags": [
+            "using only 2% of its $150/day budget"
+          ]
+        },
+        {
+          "campaign": "UK_Search_Brand",
+          "location": "UK - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 12.04,
+          "conversions": 1.5,
+          "cpa": 8.03,
+          "vs_target": "at target",
+          "daily_budget": 70.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.172,
+          "search_impr_share": 1.0,
+          "absorption": 0.236,
+          "score": 0.453,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 17% of its $70/day budget"
+          ]
+        },
+        {
+          "campaign": "UK_Search_Wristbands",
+          "location": "UK - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 9.71,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 150.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.032,
+          "search_impr_share": 0.1,
+          "absorption": 0.151,
+          "score": 0.338,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 3% of its $150/day budget"
+          ]
+        },
+        {
+          "campaign": "UK_Search_Tickets_Raffle",
+          "location": "UK - Eventgroove Products",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 8.08,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 100.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.02,
+          "search_impr_share": 0.1,
+          "absorption": 0.242,
+          "score": 0.394,
+          "active": true,
+          "flags": [
+            "thin data",
+            "using only 2% of its $100/day budget"
+          ]
+        }
+      ],
+      "moves": []
+    }
+  ]
+}

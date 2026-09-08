@@ -1,9 +1,13 @@
 """Orchestrator.
 
-    python3 run.py --export "Campaign Spends.xlsx" [--as-of YYYY-MM-DD] [--client X]
+    python3 run.py [--as-of YYYY-MM-DD] [--client X]
+    python3 run.py --export "Campaign Spends.xlsx"   # manual Google Ads UI export instead
 
-Input is the Google Ads campaign export (Day / Campaign / Budget / Account /
-Cost / Conversions / IS). Budgets come from the Budget Tracker sheet.
+Input is either the auto-refreshing "All Accounts Spend Data" Google Sheet
+(the default -- see DEFAULT_EXPORT; fetch it into raw/ before running) or a
+manually-downloaded Google Ads UI export passed via --export. load_any_export
+tells the two shapes apart by header, so either just works. Budgets come from
+the Budget Tracker sheet (raw/budget_tracker.xlsx).
 """
 from __future__ import annotations
 
@@ -20,13 +24,16 @@ import slack_fmt
 from pacing import Clock
 
 OUT = Path(__file__).parent / "out"
-DEFAULT_EXPORT = ("/root/.claude/uploads/8e185494-1a92-52a9-ac86-13a76ed426d5/"
-                  "4a10a9fa-Campaign_Spends.xlsx")
+# The daily driver is now the auto-refreshing "All Accounts Spend Data" Google
+# Sheet (fetched into raw/ each run) rather than a manually-downloaded
+# Campaign Spends.xlsx. --export still accepts either shape -- load_any_export
+# tells them apart by header.
+DEFAULT_EXPORT = str(Path(__file__).parent / "raw" / "all_accounts_spend_data.xlsx")
 
 
 def load_all(export: str, as_of: dt.date):
     budgets = loaders.load_budgets()
-    raw = gads.load_export(export)
+    raw = gads.load_any_export(export)
     df, warns = gads.resolve(raw, budgets)
     df["category"] = [categories.categorise(cl, cm, ac, ty) for cl, cm, ac, ty in
                       zip(df["client"], df["campaign"], df["account"], df["campaign_type"])]
@@ -56,6 +63,7 @@ def to_json(s, clock, as_of):
             "dev_pp": round(x.dev_pp, 2), "status": x.status,
             "landing": x.landing, "projected": round(x.projected, 2),
             "projected_pct": round(x.projected_pct, 4), "gap": round(x.gap, 2),
+            "conv_value": round(x.conv_value, 2), "roas": round(x.roas, 3) if x.roas else None,
             "days_left": x.days_left, "schedule": x.schedule_txt,
             "current_daily": round(x.current_daily, 2),
             "required_daily": round(x.required_daily, 2),
@@ -101,9 +109,9 @@ def main():
         results = engine.run(sub, budgets, clock, client)
         s = engine.summarise(client, results, cw)
         msg = slack_fmt.render_client(s, clock, as_of.strftime("%B %Y"))
-        (OUT / f"{slug(client)}.slack.md").write_text(msg)
+        (OUT / f"{slug(client)}.slack.md").write_text(msg, encoding="utf-8")
         (OUT / f"{slug(client)}.json").write_text(
-            json.dumps(to_json(s, clock, as_of), indent=2))
+            json.dumps(to_json(s, clock, as_of), indent=2), encoding="utf-8")
         print(f"[ok] {client:<24} {len(s.accounts):>3} accts  "
               f"{sum(len(x.moves) for x in s.accounts):>3} moves  "
               f"${s.spend:>10,.0f} / ${s.allocated:>10,.0f}  "
@@ -112,7 +120,7 @@ def main():
     # Portfolio-level warnings that belong to no client
     orphan = [w for w in warns if not any(c.lower() in w.lower() for c in clients)]
     if orphan:
-        (OUT / "_portfolio-warnings.txt").write_text("\n".join(orphan))
+        (OUT / "_portfolio-warnings.txt").write_text("\n".join(orphan), encoding="utf-8")
         print(f"\n[!] {len(orphan)} portfolio warning(s) -> out/_portfolio-warnings.txt")
         for w in orphan:
             print("   ", w)

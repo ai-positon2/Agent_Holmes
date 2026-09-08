@@ -28,7 +28,7 @@ CAMPAIGN_COLS = ["date", "account", "campaign", "campaign_type",
 # --------------------------------------------------------------------------- #
 def save_drive_payload(tool_result_path: str, out_name: str) -> Path:
     """Decode a Drive download_file_content payload into raw/<out_name>.xlsx."""
-    d = json.load(open(tool_result_path))
+    d = json.load(open(tool_result_path, encoding="utf-8"))
     RAW.mkdir(exist_ok=True)
     p = RAW / f"{out_name}.xlsx"
     p.write_bytes(base64.b64decode(d["content"]))

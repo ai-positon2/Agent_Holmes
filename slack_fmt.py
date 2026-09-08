@@ -63,7 +63,7 @@ def render_client(s: ClientSummary, clock, month_label: str) -> str:
     L = [f"*{s.client}* — budget pacing, {month_label}",
          f"Day {clock.as_of.day} · ideal pacing *{_pct(ideal)}* "
          f"({clock.elapsed}/{clock.dim}) · tolerance +{config.UPPER_TOL_PP:.0f}pp · "
-         f"data through {clock.data_through:%b %-d}"]
+         f"data through {clock.data_through:%b} {clock.data_through.day}"]
 
     sched = {round(a.ideal_sched, 4) for a in s.accounts if a.schedule_txt}
     if sched and max(abs(x - ideal) for x in sched) > 0.01:
