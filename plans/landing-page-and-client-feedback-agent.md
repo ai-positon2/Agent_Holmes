@@ -14,30 +14,46 @@ and separately, say what access the Client Feedback Agent would need.
       ("Agent Desk"), source at `landing/agent_desk.html`.
 
 ## Phase 2 — Client Feedback Agent (not started; scoping only right now)
-Reads Slack (client-internal groups), email, and call recordings (internal +
-client calls) to produce feedback intelligence. **Not being built yet.**
 
-Access status (as of 2026-09-08):
-- **Slack** — user says Claude has been invited to all internal groups.
-  Unverified in general, and the one channel actually checked so far
-  (`#adcopyqc`, for the *other* agent) turned out not to be about a "Claude"
-  bot invite at all — the connector authenticates as a real person, Krishna
-  Ladha, so "internal groups" access really means Krishna's own channel
-  memberships. Don't assume this is sorted for any specific client channel
-  without checking membership the same way (see project memory).
-- **Email** — divith.k@position2.com is added to every client's alias
-  group, so once an email connector (Gmail/Outlook) is connected for that
-  address, it should already cover all clients — no per-client mailbox setup
-  expected to be needed. Connector itself still not connected as of this
-  writing.
-- **Call recordings** — user is gathering the remaining access info
-  (which platform, credentials). Apollo.io is already connected in this
-  environment and has conversation-intelligence tools
+**What it is, per 2026-09-09 clarification:** not a dashboard — a **chat
+interface**. Clicking its card on the landing page opens a conversational UI
+where an AM types natural-language questions like "give me a summary of the
+previous meeting" or "what's the latest budget for [client]" and gets an
+answer pulled live from Slack, email, and call recordings. This is a
+materially different build from Pacing Desk (a static/db-backed dashboard) —
+it needs a live query-answering loop, most naturally the `sample` capability
+(Claude answering inside the artifact) rather than a fixed data model.
+
+Access status (as of 2026-09-09):
+- **Slack** — CONFIRMED broad access: `slack_list_user_channels` shows 65
+  channels including most client-internal ones (`#oia-internal`,
+  `#eventgroove-p2-internal`, `#inspire-aesthetics-px`, `#riccobene`,
+  `#riccobene-ppc`, `#mchale-landscape-internal`, `#tealium-pa-internal`,
+  `#bb-pa-internal`, `#internal-soteri-skin`, `#gentle-dental-px`, etc.).
+  Caveat that still applies: this connector authenticates as a real person
+  (currently works after a re-auth), not a bot — if it breaks again, check
+  identity/channel membership the way described in project memory, don't
+  assume an "invite Claude" step is what's needed.
+- **Email** — CONFIRMED working (connector id `fa4a0642-...`, Gmail-shaped
+  tools: search_threads, get_thread, send_message, etc.). Verified with a
+  real read-only search against divith.k@position2.com's inbox. Since that
+  address is on every client's alias group, this one connector should cover
+  all clients without per-client setup.
+- **Call recordings** — still pending; user is gathering the remaining
+  access info (which platform, credentials). Apollo.io is already connected
+  in this environment and has conversation-intelligence tools
   (get_transcript/get_recording_links/get_insights) — worth checking whether
   Position2's calls already run through Apollo before adding a new connector.
 
-Once access exists, next step would be a real plan.md for the agent itself
-(data model, what "feedback" means as output, cadence) before writing code.
+**Separately:** user is getting a dedicated Slack app/bot approved
+specifically for *posting* (Pacing Desk's alerts), decoupled from whichever
+identity this connector reads as. Not wired into anything yet.
+
+Once call-recording access lands, next step is a real plan.md for the agent
+itself — needs deciding: one combined chat surface or does each source get
+its own first pass; how "give me last meeting's summary" resolves to a
+specific call/thread when the user doesn't name one; live query each time
+vs. some pre-indexed/cached layer for speed.
 
 ## Open questions for the user
 - Where should this landing page + future agent code live — same
