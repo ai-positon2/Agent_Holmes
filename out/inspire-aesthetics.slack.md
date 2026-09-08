@@ -1,18 +1,10 @@
 *Inspire Aesthetics* — budget pacing, September 2026
 Day 8 · ideal pacing *23.3%* (7/30) · tolerance +2pp · data through Sep 8
 
-*Client total:* $25,420 of $146,200 (17.4%) · projects to $118,775 (81%) · 180 conv · CPA $142
-7 of 8 accounts off-target · 2 campaign moves · *2 cannot reach budget at current caps*
+*Client total:* $32,741 of $146,200 (22.4%) · projects to $150,293 (103%) · 210 conv · CPA $156
+7 of 8 accounts off-target · 3 campaign moves · *1 cannot reach budget at current caps*
 
 *Needs action* _(largest dollar gap first)_
-:large_blue_circle: *Inspire Aesthetics* — $0 of $23,000 (0.0%) · projects to $0 (0%)
-    → Raise to $0/day of actual spend — otherwise $23,000 short
-    _No campaign rows matched this account — check the name mapping._
-
-:large_blue_circle: *Millard Plastic Surgery* — $0 of $10,000 (0.0%) · projects to $0 (0%)
-    → Raise to $0/day of actual spend — otherwise $10,000 short
-    _No campaign rows matched this account — check the name mapping._
-
 :red_circle: *Shapiro Plastic Surgery* — $4,822 of $20,000 (24.1%) · projects to $25,936 (130%)
     _$1,242/day actual against $624/day of budget (199% used) · 17 active days left_
     → Cut to $893/day of actual spend — otherwise $5,936 over
@@ -52,6 +44,17 @@ Day 8 · ideal pacing *23.3%* (7/30) · tolerance +2pp · data through Sep 8
     :warning: `P2_Men` — 0 conv on $374
     _Spending $644/day (125% of $515/day of budget) — lands at $14,175 (118%), $2,175 over. Cut to $516/day of actual spend across 17 active days._
 
+:large_blue_circle: *Inspire Aesthetics* — $4,980 of $23,000 (21.7%) · projects to $21,216 (92%)
+    _$955/day actual against $955/day of budget (100% used) · 17 active days left_
+    → Raise to $1,060/day of actual spend — otherwise $1,784 short
+    • Move *$7/day* `Demand Gen` → `Brand`
+      _Demand Gen: $298 spent, 0 conversions. Brand: CPL $84.35 vs $100 target._
+    :warning: `P2_Breast_3` — 0 conv on $702
+    :warning: `P2_PMax_Women_Hair` — 0 conv on $454
+    :warning: `P2-Inspire-DemandGen` — 0 conv on $298
+    :warning: `P2_PMax_Men_Hair` — 0 conv on $271
+    *Cannot reach budget at current caps.* Even at 100% utilisation the set daily budgets ($955/day) top out at $21,215 — $1,785 under the $23,000 allocation. Reallocation cannot fix this; the caps have to rise.
+
 :large_blue_circle: *Garramone, Ralph* — $4,268 of $20,000 (21.3%) · projects to $18,738 (94%)
     _$851/day actual against $970/day of budget (88% used) · 17 active days left_
     → Raise to $925/day of actual spend — otherwise $1,262 short
@@ -63,11 +66,14 @@ Day 8 · ideal pacing *23.3%* (7/30) · tolerance +2pp · data through Sep 8
     :warning: `P2_Body` — 0 conv on $480
     _Spending $851/day against $970/day of budget (88% used) — lands at $18,738 (94%), $1,262 short. Needs $925/day of actual spend across 17 active days._
 
-*No action* — Southern Coastal (100%)
+:red_circle: *Millard Plastic Surgery* — $2,342 of $10,000 (23.4%) · projects to $10,303 (103%)
+    _$468/day actual against $385/day of budget (122% used) · 17 active days left_
+    → Cut to $450/day of actual spend — otherwise $303 over
+    :warning: `P2_Face_Search` — 0 conv on $661
+    :warning: `P2_Body_Search` — 0 conv on $622
+    :warning: `P2_Breast_Pmax` — 0 conv on $152
+    _Spending $468/day (122% of $385/day of budget) — lands at $10,303 (103%), $303 over. Cut to $450/day of actual spend across 17 active days._
 
-*Data flags*
-    • 'Inspire Aesthetics (1887900641)' spent $25,473 MTD but has no Google budget row in the Budget Tracker.
-    • Inspire Aesthetics / 'Inspire Aesthetics' has a $23,000 budget but no campaign data.
-    • Inspire Aesthetics / 'Millard Plastic Surgery' has a $10,000 budget but no campaign data.
+*No action* — Southern Coastal (100%)
 
 _Daily budgets and utilisation are read from the Google Ads export. Moves stay inside each location and net to zero. Automated draft — verify before applying._

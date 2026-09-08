@@ -22,6 +22,8 @@
       "projected": 8904.65,
       "projected_pct": 0.8905,
       "gap": -1095.35,
+      "conv_value": 1202.0,
+      "roas": null,
       "days_left": 23,
       "schedule": "Monday -Sunday",
       "current_daily": 309.04,

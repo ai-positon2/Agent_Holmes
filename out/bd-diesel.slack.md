@@ -10,7 +10,7 @@ Day 8 · ideal pacing *23.3%* (7/30) · tolerance +2pp · data through Sep 8
     • Move *$164/day* `Brand` → `Shopping`
       _Brand: CPL $70.66 — on target, but the weakest here. Shopping: CPL $64.36._
     *Budget figure looks wrong.* The tracker says $2,400 for the month, but the set daily budgets total $2,400 and $16,727 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed — the campaign moves below are budget-neutral and stand either way.
-    _Target of 15 is not a CPA — the account's blended CPA is $81. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead._
+    _Target of 15 is not a CPA — the account's blended CPA is $81. Actual ROAS is *12.86x* ($215,101 conversion value / $16,727 spend), below the 15x target. Campaigns are still ranked on relative CPA — ROAS isn't tracked per campaign here, only at the account level._
 
 
 _Daily budgets and utilisation are read from the Google Ads export. Moves stay inside each location and net to zero. Automated draft — verify before applying._

@@ -47,6 +47,17 @@ LOCATION_RULES = {
 
 MIN_LOC_TOKEN = 5   # shortest prefix we will trust when matching a location
 
+# Some accounts in the auto-refreshing sheet carry a trailing Google Ads
+# customer-id suffix the Budget Tracker names don't have, e.g.
+# "Inspire Aesthetics (1887900641)" vs tracker's plain "Inspire Aesthetics".
+# Stripped before matching so these don't fall out as unbudgeted orphans
+# while their real budget row sits unmatched right next to them.
+_ID_SUFFIX = re.compile(r"\s*\(\d{6,}\)\s*$")
+
+
+def strip_id_suffix(name: str) -> str:
+    return _ID_SUFFIX.sub("", str(name)).strip()
+
 
 def match_location(campaign: str, keys: list[str]) -> str | None:
     """Find which budgeted location a campaign belongs to, by name.
@@ -218,7 +229,8 @@ def resolve(df: pd.DataFrame, budgets: pd.DataFrame,
     warns: list[str] = []
 
     df = df.copy()
-    df["_alias"] = df["account_raw"].str.lower().map(ACCOUNT_ALIASES).fillna(df["account_raw"])
+    stripped = df["account_raw"].map(strip_id_suffix)
+    df["_alias"] = stripped.str.lower().map(ACCOUNT_ALIASES).fillna(stripped)
     df["_k"] = df["_alias"].map(norm)
 
     # --- level 1: the Google Ads account IS a Budget Tracker account -------

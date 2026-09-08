@@ -22,6 +22,8 @@
       "projected": 13633.3,
       "projected_pct": 27.2666,
       "gap": 13133.3,
+      "conv_value": 40335.97,
+      "roas": 11.465,
       "days_left": 23,
       "schedule": "Monday -Sunday",
       "current_daily": 439.78,
@@ -29,7 +31,7 @@
       "constrained_by": 0.0,
       "notes": [
         "*Budget figure looks wrong.* The tracker says $500 for the month, but the set daily budgets total $500 and $3,518 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
-        "Target of 20 is not a CPA \u2014 the account's blended CPA is $352. It is almost certainly a ROAS or CPM target sharing the same tracker column. Campaigns are ranked on relative CPA instead."
+        "Target of 20 is not a CPA \u2014 the account's blended CPA is $352. Actual ROAS is *11.46x* ($40,336 conversion value / $3,518 spend), below the 20x target. Campaigns are still ranked on relative CPA \u2014 ROAS isn't tracked per campaign here, only at the account level."
       ],
       "campaigns": [
         {
