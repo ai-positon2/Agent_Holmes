@@ -15,9 +15,26 @@ and separately, say what access the Client Feedback Agent would need.
 
 ## Phase 2 — Client Feedback Agent (not started; scoping only right now)
 Reads Slack (client-internal groups), email, and call recordings (internal +
-client calls) to produce feedback intelligence. **Not being built yet** —
-this phase is just an access/connector requirements list, delivered in chat,
-so the user can start requesting the right access before build work starts.
+client calls) to produce feedback intelligence. **Not being built yet.**
+
+Access status (as of 2026-09-08):
+- **Slack** — user says Claude has been invited to all internal groups.
+  Unverified in general, and the one channel actually checked so far
+  (`#adcopyqc`, for the *other* agent) turned out not to be about a "Claude"
+  bot invite at all — the connector authenticates as a real person, Krishna
+  Ladha, so "internal groups" access really means Krishna's own channel
+  memberships. Don't assume this is sorted for any specific client channel
+  without checking membership the same way (see project memory).
+- **Email** — divith.k@position2.com is added to every client's alias
+  group, so once an email connector (Gmail/Outlook) is connected for that
+  address, it should already cover all clients — no per-client mailbox setup
+  expected to be needed. Connector itself still not connected as of this
+  writing.
+- **Call recordings** — user is gathering the remaining access info
+  (which platform, credentials). Apollo.io is already connected in this
+  environment and has conversation-intelligence tools
+  (get_transcript/get_recording_links/get_insights) — worth checking whether
+  Position2's calls already run through Apollo before adding a new connector.
 
 Once access exists, next step would be a real plan.md for the agent itself
 (data model, what "feedback" means as output, cadence) before writing code.
