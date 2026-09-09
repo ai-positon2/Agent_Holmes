@@ -1,0 +1,715 @@
+<title>Search Query Analysis</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{
+  --ground:#F4F6F9; --surface:#FFFFFF; --surface2:#EBEFF5; --raise:#FFFFFF;
+  --ink:#12161C; --muted:#5C6675; --faint:#8A94A4;
+  --line:#DCE2EC; --line2:#C7D0DE;
+  --accent:#22346B; --accent-soft:#E4E9F5;
+  --over:#A8500C; --over-bg:#FBEDE0; --over-line:#D98B3E;
+  --under:#1B5B8C; --under-bg:#E4EFF8; --under-line:#5AA3D4;
+  --ontrack:#166B45; --ontrack-bg:#E2F1E9; --ontrack-line:#5CB78C;
+  --unclear:#63548C; --unclear-bg:#EDEAF6; --unclear-line:#9C8CCB;
+  --shadow:0 1px 2px rgba(18,22,28,.05),0 4px 14px rgba(18,22,28,.05);
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E1116; --surface:#161B23; --surface2:#1D242E; --raise:#1B2230;
+  --ink:#E9ECF1; --muted:#98A2B2; --faint:#6E7A8B;
+  --line:#28313D; --line2:#374253;
+  --accent:#8AA3E0; --accent-soft:#1D2740;
+  --over:#E8A05C; --over-bg:#2E2114; --over-line:#B4712C;
+  --under:#6FB4E4; --under-bg:#132434; --under-line:#3B7CAD;
+  --ontrack:#68C79A; --ontrack-bg:#12281E; --ontrack-line:#3C8C64;
+  --unclear:#B0A2E0; --unclear-bg:#211C33; --unclear-line:#7263A8;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1116; --surface:#161B23; --surface2:#1D242E; --raise:#1B2230;
+  --ink:#E9ECF1; --muted:#98A2B2; --faint:#6E7A8B;
+  --line:#28313D; --line2:#374253;
+  --accent:#8AA3E0; --accent-soft:#1D2740;
+  --over:#E8A05C; --over-bg:#2E2114; --over-line:#B4712C;
+  --under:#6FB4E4; --under-bg:#132434; --under-line:#3B7CAD;
+  --ontrack:#68C79A; --ontrack-bg:#12281E; --ontrack-line:#3C8C64;
+  --unclear:#B0A2E0; --unclear-bg:#211C33; --unclear-line:#7263A8;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{
+  background:var(--ground); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;
+}
+.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+.mast{border-bottom:1px solid var(--line);background:var(--surface)}
+.mast-in{max-width:1080px;margin:0 auto;padding:16px 20px;display:flex;
+  align-items:center;justify-content:space-between;gap:12px}
+.mast h1{font-family:Archivo,sans-serif;font-weight:700;font-size:18px;
+  letter-spacing:-.015em;margin:0;display:flex;align-items:baseline;gap:9px}
+.mast .dot{width:7px;height:7px;border-radius:50%;background:var(--under);display:inline-block;transform:translateY(-1px)}
+.mast .tag{font-size:11.5px;color:var(--faint);font-family:Archivo,sans-serif;letter-spacing:.04em}
+.mast a.back{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none}
+.mast a.back:hover{color:var(--accent)}
+
+.wrap{max-width:1080px;margin:0 auto;padding:24px 20px 64px}
+
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);
+  padding:22px 22px 20px;box-shadow:var(--shadow);margin-bottom:20px}
+.panel h2{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;margin:0 0 4px;letter-spacing:-.005em}
+.panel .sub{color:var(--muted);font-size:12.5px;margin:0 0 16px}
+
+.row{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-end}
+.field{display:flex;flex-direction:column;gap:6px;min-width:220px}
+.field label{font-family:Archivo,sans-serif;font-size:11px;font-weight:700;letter-spacing:.05em;
+  text-transform:uppercase;color:var(--faint)}
+select{font-family:"IBM Plex Sans",sans-serif;font-size:13.5px;padding:9px 11px;border-radius:9px;
+  border:1px solid var(--line2);background:var(--ground);color:var(--ink)}
+.ruleset-note{font-size:12px;color:var(--muted);margin-top:8px;padding:9px 11px;background:var(--accent-soft);
+  border-radius:8px;line-height:1.55}
+.ruleset-note b{color:var(--ink)}
+
+.drops{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:14px}
+.drop{border:1.5px dashed var(--line2);border-radius:10px;padding:14px;text-align:center;cursor:pointer;
+  transition:border-color .14s,background .14s;position:relative}
+.drop:hover,.drop.drag{border-color:var(--accent);background:var(--accent-soft)}
+.drop input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.drop .ttl{font-family:Archivo,sans-serif;font-weight:600;font-size:12.5px;margin-bottom:4px}
+.drop .req{font-size:10.5px;color:var(--faint);font-family:Archivo,sans-serif;letter-spacing:.03em}
+.drop .file{font-size:11.5px;color:var(--ontrack);font-family:"IBM Plex Mono",monospace;margin-top:6px;word-break:break-all}
+.drop.filled{border-style:solid;border-color:var(--ontrack-line);background:var(--ontrack-bg)}
+
+.actions{display:flex;align-items:center;gap:12px;margin-top:16px}
+button.run{font-family:Archivo,sans-serif;font-weight:700;font-size:13px;background:var(--accent);
+  color:var(--ground);border:none;border-radius:10px;padding:11px 22px;cursor:pointer}
+button.run:disabled{opacity:.4;cursor:default}
+button.dl{font-family:Archivo,sans-serif;font-weight:600;font-size:12.5px;background:var(--surface2);
+  color:var(--ink);border:1px solid var(--line2);border-radius:10px;padding:9px 16px;cursor:pointer}
+button.dl:disabled{opacity:.4;cursor:default}
+.status{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin-bottom:16px}
+.kpi{background:var(--surface2);border-radius:10px;padding:12px 14px}
+.kpi .v{font-family:"IBM Plex Mono",monospace;font-size:20px;font-weight:600}
+.kpi .l{font-size:11px;color:var(--muted);margin-top:2px}
+
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.tab{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;padding:7px 13px;border-radius:999px;
+  border:1px solid var(--line);background:var(--surface2);color:var(--muted);cursor:pointer}
+.tab.active{background:var(--accent);color:var(--ground);border-color:var(--accent)}
+.tab .n{opacity:.75;margin-left:4px}
+
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px}
+table{border-collapse:collapse;width:100%;font-size:12.5px}
+th{text-align:left;font-family:Archivo,sans-serif;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;color:var(--faint);background:var(--surface2);padding:8px 10px;
+  position:sticky;top:0;white-space:nowrap;border-bottom:1px solid var(--line)}
+td{padding:7px 10px;border-bottom:1px solid var(--line);vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.term{max-width:280px;word-break:break-word}
+.pill{font-family:Archivo,sans-serif;font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;white-space:nowrap}
+.pill.relevant{background:var(--ontrack-bg);color:var(--ontrack)}
+.pill.competitor{background:var(--over-bg);color:var(--over)}
+.pill.notrelevant{background:var(--surface2);color:var(--muted);border:1px solid var(--line2)}
+.pill.review{background:var(--unclear-bg);color:var(--unclear)}
+tr.row-relevant{background:color-mix(in srgb, var(--ontrack-bg) 45%, transparent)}
+tr.row-competitor{background:color-mix(in srgb, var(--over-bg) 45%, transparent)}
+tr.row-review{background:color-mix(in srgb, var(--unclear-bg) 45%, transparent)}
+
+details.ref{margin-top:14px}
+details.ref summary{cursor:pointer;font-family:Archivo,sans-serif;font-size:12.5px;font-weight:600;color:var(--muted);padding:6px 0}
+
+.empty{color:var(--faint);font-size:13px;text-align:center;padding:40px 0}
+.err{background:var(--over-bg);border:1px solid var(--over-line);color:var(--over);border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:14px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <h1><span class="dot"></span>Search Query Analysis</h1>
+    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab">&larr; Agent Desk</a>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="panel">
+    <h2>1. Choose the account</h2>
+    <p class="sub">Each account has its own classification rules — brand terms, competitors, campaign-territory map, insurance treatment. Pick the one you're reviewing.</p>
+    <div class="row">
+      <div class="field">
+        <label for="acct">Account</label>
+        <select id="acct"></select>
+      </div>
+    </div>
+    <div class="ruleset-note" id="rulesetNote"></div>
+  </div>
+
+  <div class="panel">
+    <h2>2. Upload the SQR export files</h2>
+    <p class="sub">Standard Google Ads UI exports, as CSV. All three are needed for accurate dedup against existing keywords and negatives.</p>
+    <div class="drops">
+      <label class="drop" id="drop-terms">
+        <input type="file" accept=".csv" id="file-terms">
+        <div class="ttl">Search terms report</div>
+        <div class="req">Required — Search_terms_report.csv</div>
+        <div class="file" id="file-terms-name"></div>
+      </label>
+      <label class="drop" id="drop-keywords">
+        <input type="file" accept=".csv" id="file-keywords">
+        <div class="ttl">Search keyword report</div>
+        <div class="req">Recommended — existing bidded keywords</div>
+        <div class="file" id="file-keywords-name"></div>
+      </label>
+      <label class="drop" id="drop-negs">
+        <input type="file" accept=".csv" id="file-negs">
+        <div class="ttl">Negative keyword report</div>
+        <div class="req">Recommended — existing negatives</div>
+        <div class="file" id="file-negs-name"></div>
+      </label>
+    </div>
+    <div class="actions">
+      <button class="run" id="runBtn" disabled>Run analysis</button>
+      <button class="dl" id="dlBtn" disabled>Download .xlsx (7 sheets)</button>
+      <span class="status" id="statusLine"></span>
+    </div>
+  </div>
+
+  <div id="results"></div>
+</main>
+
+<script>
+(function(){
+"use strict";
+
+// =====================================================================
+// CSV parsing — handles quoted fields (Google Ads exports quote fields
+// that contain commas), and finds the real header row even when Google
+// prepends a title/date-range line before it.
+// =====================================================================
+function parseCSV(text){
+  text = text.replace(/^﻿/, "").replace(/\r\n/g, "\n");
+  const rows = [];
+  let row = [], field = "", inQuotes = false;
+  for (let i = 0; i < text.length; i++){
+    const c = text[i];
+    if (inQuotes){
+      if (c === '"'){
+        if (text[i+1] === '"'){ field += '"'; i++; } else inQuotes = false;
+      } else field += c;
+    } else {
+      if (c === '"') inQuotes = true;
+      else if (c === ",") { row.push(field); field = ""; }
+      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else field += c;
+    }
+  }
+  if (field.length || row.length) { row.push(field); rows.push(row); }
+
+  let headerIdx = rows.findIndex(r => r.some(c => /search term|negative keyword|^keyword$/i.test(String(c).trim())));
+  if (headerIdx < 0) headerIdx = 0;
+  const header = rows[headerIdx].map(h => String(h).trim());
+  const out = [];
+  for (let i = headerIdx + 1; i < rows.length; i++){
+    const r = rows[i];
+    if (!r.length || (r.length === 1 && !r[0])) continue;
+    const obj = {};
+    header.forEach((h, j) => obj[h] = r[j] !== undefined ? r[j] : "");
+    out.push(obj);
+  }
+  return { header, rows: out };
+}
+
+function pick(row, ...names){
+  for (const n of names) if (n in row) return row[n];
+  const keys = Object.keys(row);
+  for (const n of names){
+    const k = keys.find(k => k.toLowerCase().replace(/[^a-z0-9]/g,"") === n.toLowerCase().replace(/[^a-z0-9]/g,""));
+    if (k) return row[k];
+  }
+  return "";
+}
+function num(v){
+  if (v == null) return 0;
+  const n = parseFloat(String(v).replace(/[,%$]/g, ""));
+  return isNaN(n) ? 0 : n;
+}
+
+// =====================================================================
+// Shared helpers
+// =====================================================================
+const ADDRESS_RE = /\b\d{1,6}\s+([a-z0-9]+\s+){1,4}(street|st|avenue|ave|road|rd|drive|dr|lane|ln|boulevard|blvd|way|parkway|pkwy|court|ct|circle|cir|place|pl)\b/i;
+const PHONE_RE = /\b\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/;
+const PPT_RE = /\bppt\b/i;
+
+function normSlug(campaign){
+  return String(campaign || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+}
+function campaignServesCity(slug, territoryMap, term){
+  // Returns true if `term` names a city that IS in this campaign's own
+  // territory (no mismatch), false if it names a DIFFERENT mapped
+  // campaign's city (mismatch), null if the campaign isn't in the map
+  // at all (skill's rule: unknown territory -> never flag a mismatch).
+  const key = Object.keys(territoryMap).find(k => slug.includes(k));
+  if (!key) return null;
+  const ownCities = territoryMap[key].map(c => c.toLowerCase());
+  const termLc = term.toLowerCase();
+  const hitsOwn = ownCities.some(c => termLc.includes(c.toLowerCase()));
+  if (hitsOwn) return true;
+  for (const [otherKey, cities] of Object.entries(territoryMap)){
+    if (otherKey === key) continue;
+    if (cities.some(c => termLc.includes(c.toLowerCase()))) return false;
+  }
+  return null;
+}
+
+// =====================================================================
+// RICCOBENE ruleset
+// =====================================================================
+const RICCOBENE = {
+  id: "riccobene", label: "Riccobene Associates Family Dentistry",
+  note: "Full deterministic port of the <b>sqr-analysis-riccobene</b> skill (brand terms, 90+ named competitors, campaign→territory map, insurance rules, address/phone/ppt patterns). The skill only <i>names</i> — without an exact word list — the Jobs, Education, DIY, generic Price-Seeking, Informational, Veterinary, Dental-Products and Non-Profit disqualifier categories, so those rows are resolved by asking the model per the skill's own category definitions rather than a guessed keyword list.",
+  brandRe: /(brush\s*and\s*floss|brush&floss|brushandfloss|riccobene|ricobene|riccoboni|riccobeni|rico\s*bene|commonwealth dentistry)/i,
+  competitors: ["Lane & Associates","Village Dental","Aspen Dental","ClearChoice","Tend Dental","Gentle Dental","Great Expressions","Bright Now Dental","Smile Doctors","Heartland Dental","Pacific Dental","Western Dental","Coast Dental","Affordable Dentures","Affordable Dentures & Implants","Smile Direct Club","SmileDirectClub","Byte Aligners","Candid Co","Snap-On Smile","Dental Works","Kool Smiles","Cary Family Dental","Southpoint Dental","Coastal Cosmetic Family Dentistry","Harlow Dental","Forsyth Family Dental","Premier Smile Center","Northeast Family Dentistry","Bumgarner Dental","Hamby Family Dentistry","Stockton Family Dentistry","Fielden Family Dentistry","Triad Dental","Greenway Village Dental","Cameron Village Dental","Farmington Village Dental","Smith Family and Cosmetic Dentistry","Brush Dental Care","Night and Day Dental","Loveland Dental Group","Smile Sensations","Kids Smiles","Kid Smiles","Clemmons Family Dental","Clemmons Comprehensive Dental Care","Clemmons Village Smiles","Winston Endo","Rosewood Dental","Simply Smile","Columbia Smiles","Gee Family & Cosmetic Dentistry","Nuvia","Creston Dental","Webber Dentistry","Pleasant Mill Pediatric","Urban Dental","Apex Dental Rock Hill","Vivid Dental","Lakeside Dental Greensboro","Greensboro Dental Associates","Universal Smiles Kannapolis","Johnston Smiles","Rock Hill Modern Dentistry","Health Spring Dental","Carolina Smile Spa","Premier Smiles Rock Hill","Healthy Smiles Dental","University Dental Associates","University Modern Dentistry","University Pediatric Dentistry","Friendly Dental Group","Friendly Dental University","Spring Valley Dental","Carolina Emergency Dental","Total Smiles","Beach Road Dentistry","Mocksville Dent","Pearly Whites","Lume Pediatric","Flossy Dental","Jason Sain DDS","Dr William Watt","Campbell and Farrelly","Ronald Furman","Blake Nelson DDS","Naomi Lane DDS","Dr Tony Porter","David E Thome DDS","Diksha Katwal","Matthew Barnes DDS","Dr Greg Abrams","Douglas A Stuckey DDS","Dr Reimels","Koelling Johnstun & Associates","F Smith Strickland DDS","Silva and Silva","Dr Hodges","Dr Smith","Dr Green","Dr Oliver"],
+  individualRe: /\bdr\.?\s+[a-z]{3,}\b|\b[a-z]{3,}\s+(dds|dmd|pllc)\b/i,
+  falsePositiveGuard: [/walk[\s-]?in dentistry/i, /dental urgent care/i, /magnetic dentures cost/i, /child dentist near me/i, /24\s*hour emergency dental clinic/i, /urgent care dental/i],
+  medicareRe: /\bmedicare\b/i,
+  medicaidRe: /\bmedicaid\b/i,
+  insuranceBrands: ["delta dental","deltacare","metlife","cigna","aetna","humana","guardian","spirit dental","united concordia","united healthcare dental","tricare dental","benecare","principal dental"],
+  outOfArea: ["boston ma","new york","los angeles","chicago","houston tx","phoenix az","san antonio","san diego","dallas tx","san jose ca","austin tx","jacksonville fl","columbus oh","san francisco","indianapolis","seattle wa","denver co","washington dc","nashville tn","portland or","las vegas nv","louisville ky","memphis tn","baltimore md","richmond va","norfolk va","virginia beach","hampton va","chesapeake va","suffolk va","roanoke va","blacksburg va","charlottesville va","lynchburg va","miami fl","orlando fl","tampa fl","atlanta ga","michigan state","detroit mi"],
+  mintHillRe: /mint\s*hill/i, selmaRe: /\bselma\b/i,
+  spanishDentalRe: /(dentista|dolor de muela|limpieza dental|ortodoncia|frenillos|implante dental|clinica dental)/i,
+  spanishPriceRe: /(no tengo dinero|sin dinero)/i,
+  territoryMap: { apex:["Apex"], benson:["Benson","Garner","Goldsboro","Selma"], carywest:["Cary","Apex"], columbia:["Columbia"], concord:["Concord","Harrisburg","Kannapolis"], fortmill:["Fort Mill","Rock Hill"], hampstead:["Hampstead","Wilmington","Porters Neck"], harrisburg:["Harrisburg","Concord"], highpoint:["High Point","Greensboro"], independence:["Independence","Charlotte","Matthews"], knightdale:["Knightdale"], monkeyjunction:["Monkey Junction","Wilmington","Hampstead","Porters Neck"], myrtle:["Myrtle Beach","Myrtle"], portersneck:["Porters Neck","Wilmington","Hampstead"], rockhill:["Rock Hill","Fort Mill"], sixforks:["Six Forks","Raleigh"], southport:["Southport"], university:["University City","Charlotte"], winstonsalem:["Winston-Salem","Clemmons"], mechanicsville:["Mechanicsville","Ashland"] },
+  coreSignal: ["dent","tooth","teeth","oral","gum","tmj","tmd","invisalign","braces","implant","veneer","crown","bridge","denture","whitening","extraction","root canal","endodonti","periodonti","prosthodonti","sedation","cosmetic","pediatric","kids dent","family dent","emergency dent","urgent dent","sleep apnea","cleaning","checkup","appt","appointment","dentis"],
+  llmCategories: "Jobs/Recruitment (job postings, hiring, applying to work at a dental practice), Education/Training (dental school, hygienist certification, how to become a dentist/hygienist), DIY/Home Remedy (home remedies for tooth pain, DIY whitening), Price-Seeking (cheap/free/discount framing that signals bargain-hunting rather than a real appointment intent — note 'offer' and 'affordable' alone are NOT price-seeking triggers, e.g. 'do dentists offer payment plans' and 'affordable dentist near me' are Relevant; only 'affordable dentures' is a Competitor match), Informational/Research (general dental knowledge questions with no booking intent), Veterinary/Non-Human (pet dental care), Dental Products/Retail (buying toothbrushes/whitening kits/floss at a store, not a dental visit), Non-Profit/Free Clinic (charity or volunteer dental clinics).",
+
+  classifyDeterministic(term, campaignSlug){
+    const t = term.trim(); if (!t) return null;
+    if (this.brandRe.test(t)) return { status: "Relevant", subtype: "Brand" };
+    if (this.falsePositiveGuard.some(re => re.test(t))) { /* fall through, never Competitor */ }
+    else if (this.competitors.some(c => t.toLowerCase().includes(c.toLowerCase())) || this.individualRe.test(t)) {
+      return { status: "Competitor", subtype: "Named competitor / practitioner", negMatchType: "Exact", negLevel: "Account" };
+    }
+    if (ADDRESS_RE.test(t)) return { status: "Not Relevant", subtype: "Specific Address Query" };
+    if (PHONE_RE.test(t)) return { status: "Not Relevant", subtype: "No Clear Dental Intent" };
+    if (/\bschool\b/i.test(t) && !/dental school/i.test(t)) return { status: "Not Relevant", subtype: "Education/Training", negText: "dental school", negMatchType: "Phrase", negLevel: "Account" };
+    if (PPT_RE.test(t)) return { status: "Not Relevant", subtype: "Informational/Research" };
+    if (this.spanishPriceRe.test(t)) return { status: "Not Relevant", subtype: "Price-Seeking" };
+    if (this.medicareRe.test(t)) return { status: "Not Relevant", subtype: "Medicare Not Accepted", negText: "medicare", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.medicaidRe.test(t)) return { status: "Client Review", subtype: "Medicaid Unconfirmed" };
+    if (this.insuranceBrands.some(b => t.toLowerCase().includes(b))) return { status: "Client Review", subtype: "Insurance Network Brand" };
+    if (this.mintHillRe.test(t)) return { status: "Client Review", subtype: "Potential New Service Area (Mint Hill NC)" };
+    if (this.selmaRe.test(t)) return { status: "Client Review", subtype: "Potential New Service Area (Selma NC)" };
+    if (this.spanishDentalRe.test(t)) return { status: "Client Review", subtype: "Bilingual – Confirm Staffing" };
+    if (this.outOfArea.some(c => t.toLowerCase().includes(c))) return { status: "Not Relevant", subtype: "Out-of-Area Location", negMatchType: "Phrase", negLevel: "Campaign" };
+    const mismatch = campaignServesCity(campaignSlug, this.territoryMap, t);
+    if (mismatch === false) return { status: "Not Relevant", subtype: "Location Mismatch" };
+    if (this.coreSignal.some(k => t.toLowerCase().includes(k))) return { status: "Relevant", subtype: "Core dental intent" };
+    return null; // needs the model
+  },
+};
+
+// =====================================================================
+// OIA ruleset
+// =====================================================================
+const OIA_FACILITIES = [
+  { code:"AMI", re:/\b(advanced medical imaging)\b/i, market:"kokomo|indiana" },
+  { code:"Heartland", re:/heartland imaging|hartland imaging/i },
+  { code:"NHI", re:/nebraska health imaging|nebreska health imaging/i },
+  { code:"OIC-Culpeper", re:/outpatient imaging culpeper/i },
+  { code:"ODC-AL", re:/outpatient diagnostic center/i },
+  { code:"CPIC", re:/cardinal points? imaging|raleigh radiology|raleighrad/i },
+  { code:"IDL-FL", re:/institute of diagnostic imaging/i },
+  { code:"SMI", re:/spectrum medical imaging|platte valley medical/i },
+  { code:"Holmdel-NJ", re:/holmdel imaging/i },
+  { code:"Ft Jesse", re:/ft\.? jesse imaging|gale keeran/i },
+  { code:"UD", re:/university diagnostics/i },
+  { code:"Wolf River", re:/imaging center at wolf river|wolf river imaging/i },
+];
+const OIA = {
+  id: "oia", label: "Outpatient Imaging Affiliates (OIA)",
+  note: "Full deterministic port of the <b>sqr-analysis-oia</b> skill — disqualifiers (jobs/education/reviews/free-seeking) are checked <i>before</i> brand match, per the skill's own explicit ordering, since imaging accounts see real brand+job/review overlap (e.g. ‘heartland imaging reviews’). This skill happened to give concrete example words for nearly every category, so almost all of it runs deterministically; only genuinely unclassifiable leftovers go to the model.",
+  jobsRe: /\b(hiring|careers|apply|job opening|salary|radiologic technologist jobs|jobs?)\b/i,
+  eduRe: /\b(school|certification|course|how to become a|radiology tech program|training program)\b/i,
+  reviewsRe: /\b(reviews?|complaints?|ratings?|scam|ripoff|rip-off|bad experience)\b/i,
+  freeRe: /\b(free mri|free ct scan|free mammogram|no cost scan|free imaging)\b/i,
+  facilities: OIA_FACILITIES,
+  brandGeneric: /(outpatient imaging affiliates|oia rad|oiarad)/i,
+  competitors: ["ecommunity.com","Community Health Network","ascension.org","baptisthealth.com","nebraskamed.com","Nebraska Medicine","chihealth.com","CHI Health","americanhealthimaging.com","raleighrad.com","touchstoneimaging.com","thewomensimagingcenter.com","intermountainhealth.org","methodisthealth.org","fauquierhealth.org","amimaging.com","uvahealth.com","osfhealthcare.org","RadNet","SimonMed","SimonMed Imaging","US Radiology Specialists","Akumin","Alliance HealthCare Radiology","InSight Imaging","Zwanger-Pesiri","Envision Radiology","Solis Mammography","US Imaging Network"],
+  falsePositiveGuard: [/imaging center near me/i, /walk-?in mri/i, /open mri near me/i, /diagnostic center near me/i, /radiology clinic near me/i],
+  infoRe: /\b(what is|how does .* work|procedures|side effects of)\b/i,
+  vetRe: /\b(dog|cat|pet|vet)\b.*\b(mri|ct|scan|imaging|x-?ray|ultrasound)\b|\b(mri|ct|scan|imaging|x-?ray|ultrasound)\b.*\b(dog|cat|pet|vet)\b/i,
+  medicareRe: /\bmedicare\b/i, medicaidRe: /\bmedicaid\b/i,
+  insuranceBrands: ["aetna","cigna","blue cross","unitedhealthcare","united healthcare","humana"],
+  outOfArea: ["los angeles ca","new york ny","houston tx","phoenix az","san antonio tx","san diego ca","dallas tx","san jose ca","austin tx","san francisco ca","seattle wa","portland or","las vegas nv","boston ma","miami fl","atlanta ga","detroit mi"],
+  territoryMap: { ami:["Kokomo"], heartland:["Louisville","Elizabethtown"], nhi:["Omaha"], culpeper:["Culpeper"], odcal:["Huntsville","Madison","Athens","Decatur"], cpic:["Raleigh","Cary","Wake Forest","Clayton"], idl:["Fort Walton Beach"], smi:["Brighton","Denver"], holmdel:["Holmdel"], ftjesse:["Normal","Bloomington"], ud:["Knoxville","Halls","Northshore"], wolfriver:["Germantown","Memphis"] },
+  coreSignal: ["mri","open mri","ct scan","cat scan","mammogram","mammography","3d mammogram","ultrasound","sonogram","x-ray","xray","bone density","dexa scan","women's imaging","fluoroscopy","pet scan","pet/ct","nuclear medicine","arthrogram","biopsy","radiology","diagnostic imaging","imaging center","schedule a scan","mri appointment"],
+  llmCategories: "Anything left over that isn't a jobs/education/reviews/free-seeking disqualifier, isn't a facility brand or competitor, isn't an address/phone/insurance/out-of-area/location-mismatch match, and doesn't contain an obvious imaging-service word. Classify Relevant only if it clearly signals wanting to book/find an imaging service; otherwise Not Relevant → Unverified Term.",
+
+  classifyDeterministic(term, campaignSlug){
+    const t = term.trim(); if (!t) return null;
+    if (this.jobsRe.test(t)) return { status: "Not Relevant", subtype: "Jobs/Recruitment", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.eduRe.test(t)) return { status: "Not Relevant", subtype: "Education/Training", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.reviewsRe.test(t)) return { status: "Not Relevant", subtype: "Reviews/Reputation", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.freeRe.test(t)) return { status: "Not Relevant", subtype: "Free-Seeking", negMatchType: "Phrase", negLevel: "Account" };
+
+    // AMI ambiguity: only OIA brand with Kokomo/Indiana context. A bare
+    // "AMI" with no location, or paired with a different city/state, or
+    // the named competitor domain, is the UNRELATED national brand
+    // (Atlantic Medical Imaging etc.) — per the skill, that falls through
+    // to Competitor, never a clean core-imaging "Relevant".
+    const amiMatch = /\bami\b/i.test(t);
+    if (amiMatch || /amimaging\.com/i.test(t)) {
+      return /(kokomo|indiana)/i.test(t)
+        ? { status: "Relevant", subtype: "Brand (AMI — Kokomo)" }
+        : { status: "Competitor", subtype: "AMI Imaging (unrelated national brand)", negMatchType: "Exact", negLevel: "Account" };
+    }
+
+    for (const f of this.facilities){ if (f.code !== "AMI" && f.re.test(t)) return { status: "Relevant", subtype: "Brand (" + f.code + ")" }; }
+    if (this.brandGeneric.test(t)) return { status: "Relevant", subtype: "Brand (OIA corporate)" };
+
+    // JV same-name caution (Section 5a)
+    if (/uva health/i.test(t)) return /culpeper/i.test(t) ? { status: "Relevant", subtype: "Brand (OIC-Culpeper via UVA Health JV)" } : { status: "Competitor", subtype: "UVA Health (non-Culpeper market)", negMatchType: "Exact", negLevel: "Account" };
+    if (/osf ?healthcare|osf imaging/i.test(t)) return /(bloomington|normal)/i.test(t) ? { status: "Relevant", subtype: "Brand (Ft Jesse via OSF JV)" } : { status: "Competitor", subtype: "OSF HealthCare (non-Bloomington/Normal market)", negMatchType: "Exact", negLevel: "Account" };
+
+    if (/gearstar/i.test(t)) return { status: "Not Relevant", subtype: "Unverified Term — flag for client confirmation" };
+    if (this.falsePositiveGuard.some(re => re.test(t))) { /* never Competitor */ }
+    else if (this.competitors.some(c => t.toLowerCase().includes(c.toLowerCase()))) {
+      return { status: "Competitor", subtype: "Named competitor / health system", negMatchType: "Exact", negLevel: "Account" };
+    }
+    if (ADDRESS_RE.test(t)) return { status: "Not Relevant", subtype: "Specific Address Query" };
+    if (PHONE_RE.test(t)) return { status: "Not Relevant", subtype: "Specific Phone Query" };
+    if (this.infoRe.test(t)) return { status: "Not Relevant", subtype: "Informational/Research" };
+    if (this.vetRe.test(t)) return { status: "Not Relevant", subtype: "Veterinary/Non-Human" };
+    if (this.medicareRe.test(t) || this.medicaidRe.test(t)) return { status: "Client Review", subtype: "Insurance Coverage Unconfirmed" };
+    if (this.insuranceBrands.some(b => t.toLowerCase().includes(b))) return { status: "Client Review", subtype: "Insurance Network Unconfirmed" };
+    if (this.outOfArea.some(c => t.toLowerCase().includes(c))) return { status: "Not Relevant", subtype: "Out-of-Area Location", negMatchType: "Phrase", negLevel: "Campaign" };
+    const mismatch = campaignServesCity(campaignSlug, this.territoryMap, t);
+    if (mismatch === false) return { status: "Not Relevant", subtype: "Location Mismatch" };
+    if (this.coreSignal.some(k => t.toLowerCase().includes(k))) return { status: "Relevant", subtype: "Core imaging intent" };
+    return null;
+  },
+};
+
+// =====================================================================
+// Generic fallback (no dedicated ruleset yet)
+// =====================================================================
+const GENERIC = {
+  id: "generic", label: "Other / not yet mapped",
+  note: "No dedicated ruleset for this account yet — every row is classified by the model with a plain SQR rubric (Relevant / Competitor / Not Relevant / Client Review), no client-specific brand, competitor, or territory knowledge. Add a real ruleset for this account the same way Riccobene and OIA were done, once its own SQR conventions are known.",
+  llmCategories: "General SQR triage with no account-specific knowledge: Relevant (clear intent to buy/book this kind of product or service), Competitor (names a different, competing brand), Not Relevant (jobs, education, informational, DIY, out-of-area, or no clear intent), Client Review (ambiguous insurance/coverage or anything needing a human call).",
+  classifyDeterministic(){ return null; },
+};
+
+const RULESETS = { riccobene: RICCOBENE, oia: OIA, generic: GENERIC };
+
+// =====================================================================
+// LLM-assisted stage for rows the deterministic pass couldn't resolve
+// =====================================================================
+let sample = null;
+async function classifyPending(ruleset, terms, statusCb){
+  if (!terms.length) return {};
+  if (!sample) return Object.fromEntries(terms.map(t => [t, { status: "Not Relevant", subtype: "No Clear Intent (model unavailable)" }]));
+  const out = {};
+  const BATCH = 40;
+  for (let i = 0; i < terms.length; i += BATCH){
+    const batch = terms.slice(i, i + BATCH);
+    statusCb("Classifying " + (i + batch.length) + "/" + terms.length + " ambiguous terms with the model…");
+    const prompt =
+      "You are applying one account's Search Query Report (SQR) classification rules. " +
+      "These search terms did NOT match any of the account's deterministic rules (brand, named competitors, address/phone, insurance, out-of-area, location-mismatch, core service-signal keywords) — classify each using ONLY these remaining categories:\n\n" +
+      ruleset.llmCategories + "\n\n" +
+      "If none of those categories fit and the term still shows a genuine, clear intent to use this kind of business's product or service, classify it Relevant. Otherwise classify it Not Relevant with subtype 'No Clear Intent'.\n\n" +
+      "Reply with ONLY a JSON array, one object per term, in the same order: " +
+      '[{"term": "...", "status": "Relevant"|"Competitor"|"Not Relevant"|"Client Review", "subtype": "short label"}]\n\n' +
+      "Terms:\n" + batch.map(t => "- " + t).join("\n");
+    try {
+      const res = await sample.json(prompt, { modelTier: "quick" });
+      const arr = Array.isArray(res) ? res : [];
+      arr.forEach(r => { if (r && r.term) out[r.term] = { status: r.status || "Not Relevant", subtype: r.subtype || "" }; });
+    } catch (e) { /* leave unresolved terms out; caller defaults them */ }
+    batch.forEach(t => { if (!out[t]) out[t] = { status: "Not Relevant", subtype: "No Clear Intent" }; });
+  }
+  return out;
+}
+
+// =====================================================================
+// Analysis pipeline
+// =====================================================================
+let lastResult = null;
+
+async function runAnalysis(ruleset, termsCsv, keywordsCsv, negsCsv, statusCb){
+  statusCb("Parsing files…");
+  const termsParsed = parseCSV(termsCsv);
+  const rows = termsParsed.rows
+    .map(r => ({
+      term: String(pick(r, "Search term", "Search Term")).trim(),
+      campaign: String(pick(r, "Campaign")).trim(),
+      adGroup: String(pick(r, "Ad group", "Ad Group")).trim(),
+      campaignType: String(pick(r, "Campaign type", "Campaign Type")).trim(),
+      clicks: num(pick(r, "Clicks")),
+      impressions: num(pick(r, "Impr.", "Impressions")),
+      cost: num(pick(r, "Cost")),
+      conversions: num(pick(r, "Conversions", "Conv.")),
+    }))
+    .filter(r => r.term && !/^total:/i.test(r.term));
+
+  const existingKeywords = new Set();
+  if (keywordsCsv) parseCSV(keywordsCsv).rows.forEach(r => {
+    const kw = String(pick(r, "Keyword")).trim().toLowerCase().replace(/[\[\]"]/g, "");
+    if (kw) existingKeywords.add(kw);
+  });
+  const existingNegs = new Set();
+  if (negsCsv) parseCSV(negsCsv).rows.forEach(r => {
+    const kw = String(pick(r, "Negative keyword", "Keyword")).trim().toLowerCase().replace(/[\[\]"]/g, "");
+    if (kw) existingNegs.add(kw);
+  });
+
+  statusCb("Running deterministic rules on " + rows.length + " rows…");
+  const pendingTerms = new Set();
+  rows.forEach(r => {
+    r._slug = normSlug(r.campaign);
+    r._det = ruleset.classifyDeterministic(r.term, r._slug);
+    if (!r._det) pendingTerms.add(r.term);
+  });
+
+  const llmResults = await classifyPending(ruleset, Array.from(pendingTerms), statusCb);
+  rows.forEach(r => { if (!r._det) r._det = llmResults[r.term] || { status: "Not Relevant", subtype: "No Clear Intent" }; });
+
+  statusCb("Building negatives, keywords, and summary…");
+
+  // --- Negatives ---
+  const negMap = new Map();
+  rows.forEach(r => {
+    const d = r._det;
+    if (d.status === "Competitor" || (d.status === "Not Relevant" && d.negMatchType)) {
+      const negText = (d.negText || r.term).toLowerCase();
+      if (existingNegs.has(negText)) return;
+      const level = d.negLevel === "Campaign" && /pmax|performance max/i.test(r.campaignType) ? "Account (PMax)" : (d.negLevel || "Account");
+      const key = negText + "|" + level + "|" + (d.negMatchType || "Exact");
+      const impact = r.cost + 5 * r.conversions;
+      if (!negMap.has(key) || negMap.get(key).impact < impact) {
+        negMap.set(key, { text: negText, level, matchType: d.negMatchType || "Exact", reason: d.subtype, impact, cost: r.cost, conversions: r.conversions, campaign: r.campaign });
+      } else {
+        const ex = negMap.get(key); ex.impact += impact; ex.cost += r.cost; ex.conversions += r.conversions;
+      }
+    }
+  });
+  const allNegatives = Array.from(negMap.values()).sort((a, b) => b.impact - a.impact);
+  const priorityNegatives = allNegatives.slice(0, 30);
+
+  // --- New keywords ---
+  const kwMap = new Map();
+  rows.forEach(r => {
+    const d = r._det;
+    if (d.status !== "Relevant") return;
+    const norm = r.term.toLowerCase();
+    if (existingKeywords.has(norm)) return;
+    if (!(r.conversions > 0 || (r.impressions > 0 && r.clicks / r.impressions >= 0.02) || r.clicks >= 3)) return;
+    const isPmax = /pmax|performance max/i.test(r.campaignType);
+    const wordCount = r.term.trim().split(/\s+/).length;
+    const ctr = r.impressions > 0 ? r.clicks / r.impressions : 0;
+    const matchType = isPmax ? "— (Search Theme)" : (wordCount >= 3 && (r.conversions > 0 || ctr >= 0.05)) ? "Exact Match" : "Phrase Match";
+    const tier = r.conversions > 0 ? 1 : (r.clicks >= 3 && ctr >= 0.05 ? 2 : 0);
+    if (tier === 0) return;
+    const key = norm + "|" + r.campaign;
+    const row = { term: r.term, assetType: isPmax ? "Search Theme" : "Keyword", matchType, addLevel: isPmax ? "Asset Group" : "Ad Group", whereToAdd: r.campaign + (isPmax ? "" : " / " + r.adGroup), tier, conversions: r.conversions, ctr, clicks: r.clicks, cost: r.cost };
+    if (!kwMap.has(key) || kwMap.get(key).conversions < row.conversions) kwMap.set(key, row);
+  });
+  const allKeywords = Array.from(kwMap.values()).sort((a, b) => (a.tier - b.tier) || (b.conversions - a.conversions) || (b.ctr - a.ctr));
+  const priorityKeywords = allKeywords.slice(0, 30);
+
+  // --- Client review ---
+  const clientReview = rows.filter(r => r._det.status === "Client Review")
+    .reduce((acc, r) => {
+      const k = r._det.subtype;
+      if (!acc[k]) acc[k] = { subtype: k, count: 0, examples: [] };
+      acc[k].count++;
+      if (acc[k].examples.length < 5) acc[k].examples.push(r.term);
+      return acc;
+    }, {});
+
+  const totalSpend = rows.reduce((s, r) => s + r.cost, 0);
+  const totalConv = rows.reduce((s, r) => s + r.conversions, 0);
+  const byStatus = rows.reduce((acc, r) => { acc[r._det.status] = (acc[r._det.status] || 0) + 1; return acc; }, {});
+
+  return {
+    ruleset, rows, allNegatives, priorityNegatives, allKeywords, priorityKeywords,
+    clientReview: Object.values(clientReview),
+    summary: {
+      totalRows: rows.length, totalSpend, totalConv, byStatus,
+      relevantPct: rows.length ? Math.round(100 * (byStatus["Relevant"] || 0) / rows.length) : 0,
+      reviewPct: rows.length ? Math.round(100 * (byStatus["Client Review"] || 0) / rows.length) : 0,
+    },
+  };
+}
+
+// =====================================================================
+// UI wiring
+// =====================================================================
+const acctSel = document.getElementById("acct");
+const rulesetNote = document.getElementById("rulesetNote");
+const runBtn = document.getElementById("runBtn");
+const dlBtn = document.getElementById("dlBtn");
+const statusLine = document.getElementById("statusLine");
+const resultsEl = document.getElementById("results");
+
+const files = { terms: null, keywords: null, negs: null };
+
+Object.entries(RULESETS).forEach(([id, rs]) => {
+  const opt = document.createElement("option");
+  opt.value = id; opt.textContent = rs.label;
+  acctSel.appendChild(opt);
+});
+function refreshRulesetNote(){ rulesetNote.innerHTML = RULESETS[acctSel.value].note; }
+acctSel.addEventListener("change", refreshRulesetNote);
+refreshRulesetNote();
+
+function wireDrop(key, inputId, dropId, nameId){
+  const input = document.getElementById(inputId), drop = document.getElementById(dropId), nameEl = document.getElementById(nameId);
+  input.addEventListener("change", () => {
+    const f = input.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => { files[key] = reader.result; nameEl.textContent = f.name; drop.classList.add("filled"); updateRunEnabled(); };
+    reader.readAsText(f);
+  });
+}
+wireDrop("terms", "file-terms", "drop-terms", "file-terms-name");
+wireDrop("keywords", "file-keywords", "drop-keywords", "file-keywords-name");
+wireDrop("negs", "file-negs", "drop-negs", "file-negs-name");
+
+function updateRunEnabled(){ runBtn.disabled = !files.terms; }
+
+function setStatus(t){ statusLine.textContent = t; }
+
+runBtn.addEventListener("click", async () => {
+  runBtn.disabled = true; dlBtn.disabled = true;
+  resultsEl.innerHTML = "";
+  try {
+    const ruleset = RULESETS[acctSel.value];
+    lastResult = await runAnalysis(ruleset, files.terms, files.keywords, files.negs, setStatus);
+    setStatus("Done — " + lastResult.summary.totalRows + " rows classified.");
+    renderResults(lastResult);
+    dlBtn.disabled = false;
+  } catch (e) {
+    resultsEl.innerHTML = '<div class="err">Something went wrong: ' + (e && e.message ? e.message : String(e)) + "</div>";
+    setStatus("Failed.");
+  } finally { runBtn.disabled = false; }
+});
+
+dlBtn.addEventListener("click", async () => {
+  if (!lastResult || typeof XLSX === "undefined") return;
+  const wb = XLSX.utils.book_new();
+  const r = lastResult;
+  const addSheet = (name, aoa) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), name);
+
+  addSheet("SQR Analysis", [["Search Term","Campaign","Ad Group","Clicks","Impr.","Cost","Conversions","Classification","Subtype"],
+    ...r.rows.map(x => [x.term, x.campaign, x.adGroup, x.clicks, x.impressions, x.cost, x.conversions, x._det.status, x._det.subtype || ""])]);
+  addSheet("Summary", [["Metric","Value"],
+    ["Total rows", r.summary.totalRows], ["Total spend", r.summary.totalSpend.toFixed(2)], ["Total conversions", r.summary.totalConv],
+    ["Relevant %", r.summary.relevantPct], ["Client Review %", r.summary.reviewPct],
+    ...Object.entries(r.summary.byStatus).map(([k,v]) => [k, v])]);
+  addSheet("Negatives to Add (Priority)", [["Negative Text","Match Type","Level","Reason","Impact Score","Cost","Conversions"],
+    ...r.priorityNegatives.map(n => [n.text, n.matchType, n.level, n.reason, n.impact.toFixed(2), n.cost.toFixed(2), n.conversions])]);
+  addSheet("New Keywords to Add (Priority)", [["Term","Asset Type","Suggested Match Type","Add To Level","Where To Add","Tier","Conversions","CTR","Clicks","Cost"],
+    ...r.priorityKeywords.map(k => [k.term, k.assetType, k.matchType, k.addLevel, k.whereToAdd, k.tier, k.conversions, (k.ctr*100).toFixed(2)+"%", k.clicks, k.cost.toFixed(2)])]);
+  addSheet("Client Review Required", [["Issue Type","Count","Example Terms"], ...r.clientReview.map(c => [c.subtype, c.count, c.examples.join("; ")])]);
+  addSheet("All Negatives (Reference)", [["Negative Text","Match Type","Level","Reason","Impact Score"], ...r.allNegatives.map(n => [n.text, n.matchType, n.level, n.reason, n.impact.toFixed(2)])]);
+  addSheet("All Keywords (Reference)", [["Term","Asset Type","Match Type","Tier","Conversions","CTR","Clicks"], ...r.allKeywords.map(k => [k.term, k.assetType, k.matchType, k.tier, k.conversions, (k.ctr*100).toFixed(2)+"%", k.clicks])]);
+
+  const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+  const blob = new Blob([wbout], { type: "application/octet-stream" });
+  const downloads = window.claude ? await window.claude.use("downloads").catch(() => null) : null;
+  const filename = "SQR_Analysis_" + lastResult.ruleset.id + "_" + new Date().toISOString().slice(0,10) + ".xlsx";
+  if (!downloads) { setStatus("Downloads aren't available in this view."); return; }
+  try {
+    await downloads.save({ filename, data: blob });
+    setStatus("Saved " + filename);
+  } catch (e) {
+    setStatus(e && e.code === "declined" ? "Download cancelled." : "Couldn't save the file (" + (e && e.code || "unknown") + ").");
+  }
+});
+
+function pillClass(status){
+  return status === "Relevant" ? "relevant" : status === "Competitor" ? "competitor" : status === "Client Review" ? "review" : "notrelevant";
+}
+function rowClass(status){
+  return status === "Relevant" ? "row-relevant" : status === "Competitor" ? "row-competitor" : status === "Client Review" ? "row-review" : "";
+}
+
+function renderResults(r){
+  const s = r.summary;
+  const html = [];
+  html.push('<div class="panel">');
+  html.push('<div class="kpis">',
+    kpi(s.totalRows, "rows classified"), kpi("$" + s.totalSpend.toFixed(0), "total spend"),
+    kpi(s.totalConv, "conversions"), kpi(s.relevantPct + "%", "relevant"),
+    kpi(r.priorityNegatives.length, "priority negatives"), kpi(r.priorityKeywords.length, "priority keywords"),
+    '</div>');
+  html.push('<div class="tabs">',
+    tab("negs", "Priority Negatives", r.priorityNegatives.length),
+    tab("kws", "Priority Keywords", r.priorityKeywords.length),
+    tab("review", "Client Review", r.clientReview.reduce((a,c)=>a+c.count,0)),
+    tab("all", "SQR Analysis (all rows)", r.rows.length),
+    '</div>');
+  html.push('<div id="tabpanes">');
+  html.push(paneNegs(r), paneKws(r), paneReview(r), paneAll(r));
+  html.push('</div>');
+  html.push('</div>');
+  resultsEl.innerHTML = html.join("");
+
+  resultsEl.querySelectorAll(".tab").forEach(t => t.addEventListener("click", () => {
+    resultsEl.querySelectorAll(".tab").forEach(x => x.classList.remove("active"));
+    resultsEl.querySelectorAll(".pane").forEach(x => x.hidden = true);
+    t.classList.add("active");
+    document.getElementById("pane-" + t.dataset.k).hidden = false;
+  }));
+  resultsEl.querySelector('.tab[data-k="negs"]').classList.add("active");
+}
+function kpi(v, l){ return '<div class="kpi"><div class="v num">' + v + '</div><div class="l">' + l + '</div></div>'; }
+function tab(k, label, n){ return '<button class="tab" data-k="' + k + '">' + label + ' <span class="n">' + n + '</span></button>'; }
+
+function paneNegs(r){
+  const rowsHtml = r.priorityNegatives.map(n => '<tr><td class="term">' + esc(n.text) + '</td><td>' + n.matchType + '</td><td>' + n.level + '</td><td>' + esc(n.reason||"") + '</td><td class="num">$' + n.impact.toFixed(0) + '</td><td class="num">' + n.conversions + '</td></tr>').join("");
+  const refHtml = r.allNegatives.slice(30).map(n => '<tr><td class="term">' + esc(n.text) + '</td><td>' + n.matchType + '</td><td>' + n.level + '</td><td class="num">$' + n.impact.toFixed(0) + '</td></tr>').join("");
+  return '<div class="pane" id="pane-negs" hidden>' +
+    (r.priorityNegatives.length ? tblWrap(["Negative","Match","Level","Reason","Impact","Conv"], rowsHtml) : empty()) +
+    (r.allNegatives.length > 30 ? '<details class="ref"><summary>All negatives (' + r.allNegatives.length + ')</summary>' + tblWrap(["Negative","Match","Level","Impact"], refHtml) + '</details>' : "") +
+    '</div>';
+}
+function paneKws(r){
+  const rowsHtml = r.priorityKeywords.map(k => '<tr><td class="term">' + esc(k.term) + '</td><td>' + k.assetType + '</td><td>' + k.matchType + '</td><td>' + esc(k.whereToAdd) + '</td><td class="num">' + k.conversions + '</td><td class="num">' + (k.ctr*100).toFixed(1) + '%</td><td>' + (k.tier===1?"Tier 1":"Tier 2") + '</td></tr>').join("");
+  const refHtml = r.allKeywords.slice(30).map(k => '<tr><td class="term">' + esc(k.term) + '</td><td>' + k.assetType + '</td><td class="num">' + k.conversions + '</td></tr>').join("");
+  return '<div class="pane" id="pane-kws" hidden>' +
+    (r.priorityKeywords.length ? tblWrap(["Term","Type","Match","Where to add","Conv","CTR","Tier"], rowsHtml) : empty()) +
+    (r.allKeywords.length > 30 ? '<details class="ref"><summary>All eligible keywords (' + r.allKeywords.length + ')</summary>' + tblWrap(["Term","Type","Conv"], refHtml) + '</details>' : "") +
+    '</div>';
+}
+function paneReview(r){
+  const rowsHtml = r.clientReview.map(c => '<tr><td>' + esc(c.subtype) + '</td><td class="num">' + c.count + '</td><td class="term">' + esc(c.examples.join(", ")) + '</td></tr>').join("");
+  return '<div class="pane" id="pane-review" hidden>' + (r.clientReview.length ? tblWrap(["Issue","Count","Examples"], rowsHtml) : empty()) + '</div>';
+}
+function paneAll(r){
+  const rowsHtml = r.rows.slice(0, 500).map(x => '<tr class="' + rowClass(x._det.status) + '"><td class="term">' + esc(x.term) + '</td><td>' + esc(x.campaign) + '</td><td class="num">$' + x.cost.toFixed(2) + '</td><td class="num">' + x.conversions + '</td><td><span class="pill ' + pillClass(x._det.status) + '">' + x._det.status + '</span></td><td>' + esc(x._det.subtype||"") + '</td></tr>').join("");
+  const note = r.rows.length > 500 ? '<p class="sub" style="margin-top:8px">Showing first 500 of ' + r.rows.length + ' rows on-screen — the full set is in the downloaded workbook.</p>' : "";
+  return '<div class="pane" id="pane-all" hidden>' + tblWrap(["Term","Campaign","Cost","Conv","Status","Subtype"], rowsHtml) + note + '</div>';
+}
+function tblWrap(headers, rowsHtml){ return '<div class="tbl-wrap"><table><thead><tr>' + headers.map(h => '<th>'+h+'</th>').join("") + '</tr></thead><tbody>' + (rowsHtml || "") + '</tbody></table></div>'; }
+function empty(){ return '<div class="empty">None found.</div>'; }
+function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])); }
+
+// =====================================================================
+// boot
+// =====================================================================
+(async function boot(){
+  if (window.claude && window.claude.use) {
+    sample = await window.claude.use("sample").catch(() => null);
+  }
+})();
+})();
+</script>
