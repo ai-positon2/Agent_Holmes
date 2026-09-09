@@ -203,10 +203,27 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     "'this week'), use get_meeting_transcript or search tools to find " +
     "candidates, then pick the most recent one yourself unless it's " +
     "genuinely ambiguous (e.g. two different clients could match) — in " +
-    "that case ask a short clarifying question instead of guessing. Keep " +
-    "answers tight and scannable: short paragraphs or a few bullets, no " +
-    "filler preamble. Say plainly when a tool found nothing, rather than " +
-    "inventing an answer.";
+    "that case ask a short clarifying question instead of guessing.\n\n" +
+    "Be thorough before you answer a broad question ('what's been said about " +
+    "X', 'what happened this week'): one search call is rarely the full " +
+    "picture. Add an after:/before:/during: date filter to search_slack when " +
+    "the question names a timeframe — plain keyword search sorts by " +
+    "relevance and silently drops in-range messages that just scored lower. " +
+    "Search more than once with different phrasings (a client's name, a " +
+    "product name, a person's name if one is mentioned) and, for anything " +
+    "that looks like the main channel for the topic, follow up with " +
+    "read_slack_channel to get that channel's actual full recent discussion " +
+    "instead of relying on a handful of top search hits — a search result " +
+    "is a pointer to check further, not the complete conversation. Only " +
+    "write the answer once you're confident you've seen what happened, not " +
+    "just what one search call happened to surface.\n\n" +
+    "Write answers as a synthesized summary in your own words — what " +
+    "happened, what was decided, what's still open — grouped by topic or " +
+    "outcome. Do not write it as a list of 'Person said: quote' log lines; " +
+    "quote someone directly only when their exact wording matters (a number, " +
+    "a commitment, a deadline). Keep it tight and scannable: short " +
+    "paragraphs or a few bullets, no filler preamble. Say plainly when a " +
+    "tool found nothing, rather than inventing an answer.";
 
   function scrollToEnd(){ chatWrap.scrollTop = chatWrap.scrollHeight; }
 
@@ -282,10 +299,14 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     setStatus('Searching Slack for "' + input.query + '"…');
     const slack = await getServer("Slack");
     const res = await slack.slack_search_public_and_private({
-      query: String(input.query || ""), limit: 8, include_context: false,
+      query: String(input.query || ""),
+      limit: 20,
+      include_context: false,
+      sort: input.sort === "relevance" ? "score" : "timestamp",
+      sort_dir: "desc",
     });
     const text = (res && res.results) ? res.results : JSON.stringify(res);
-    return truncate(text, 5000);
+    return truncate(text, 6000);
   }
 
   async function tReadSlackChannel(input){
@@ -391,8 +412,11 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
 
   const TOOLS = [
     { name: "search_slack",
-      description: "Search Slack messages across every channel and DM the viewer can see. Returns matching messages with channel, author, timestamp, and text. Use for internal discussion, decisions, or context about a client, project, or topic.",
-      inputSchema: { type: "object", properties: { query: { type: "string", description: "Slack search terms, optionally with modifiers like in:#channel-name or from:@user" } }, required: ["query"] },
+      description: "Search Slack messages across every channel and DM the viewer can see, newest first by default. Returns up to 20 matching messages with channel, author, timestamp, and text. Add after:/before:/during: to the query for date-bounded questions — plain keyword search alone can miss in-range messages that just aren't the top relevance match. Call more than once with different phrasings for a broad question; this returns pointers to check further, not necessarily the whole conversation.",
+      inputSchema: { type: "object", properties: {
+        query: { type: "string", description: "Slack search terms, optionally with modifiers like in:#channel-name, from:@user, after:2026-09-07" },
+        sort: { type: "string", enum: ["recent", "relevance"], description: "'recent' (default) for newest-first, best for 'what's been discussed lately' questions; 'relevance' to rank by match quality instead." },
+      }, required: ["query"] },
       execute: tSearchSlack },
     { name: "read_slack_channel",
       description: "Read the recent message history of one Slack channel, given its channel ID (find one via search_slack first — results show 'Channel: #name (ID: Cxxxx)').",
@@ -489,10 +513,12 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
   });
 
   // ---- boot -------------------------------------------------------------
+  const SOURCE_LABELS = { "Slack": "Slack", "Google Drive": "Meeting Notes", "Gmail": "Gmail" };
+
   function renderSourcePill(name, state){
     const p = document.createElement("span");
     p.className = "src-pill"; p.dataset.state = state || "unknown";
-    p.innerHTML = '<span class="b"></span>' + name;
+    p.innerHTML = '<span class="b"></span>' + (SOURCE_LABELS[name] || name);
     sourcesEl.appendChild(p);
   }
 
