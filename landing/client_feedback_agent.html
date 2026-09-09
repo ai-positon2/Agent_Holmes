@@ -336,8 +336,14 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     files.sort((a, b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
     const candidates = files.slice(0, 2);
 
+    // Match by TOKEN, not whole-phrase — real meeting titles are often
+    // abbreviated or nicknamed ("BetaB Internal Weekly Cadence" for a
+    // "Beta Bionics" question), so a literal substring check on the full
+    // keyword misses the real meeting and can surface an unrelated one
+    // whose title happens to contain the whole phrase instead.
+    const tokens = keyword.toLowerCase().split(/\s+/).filter(t => t.length >= 3);
     const allTitles = [];
-    const matched = [];
+    const scored = [];
     for (const f of candidates) {
       setStatus("Reading " + f.title + "…");
       const content = await drive.read_file_content({ fileId: f.id });
@@ -350,18 +356,30 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
         const start = marks[i].idx;
         const end = i + 1 < marks.length ? marks[i + 1].idx : text.length;
         const section = text.slice(start, end);
-        allTitles.push(marks[i].title);
-        if (!keyword || section.toLowerCase().includes(keyword.toLowerCase())) {
-          matched.push(section.trim());
-        }
+        const title = marks[i].title;
+        allTitles.push(title);
+        if (!tokens.length) { scored.push({ section, titleScore: 0, bodyScore: 0, len: section.length }); continue; }
+        const titleLc = title.toLowerCase();
+        const bodyLc = section.toLowerCase();
+        const titleScore = tokens.filter(t => titleLc.includes(t)).length;
+        const bodyScore = tokens.filter(t => bodyLc.includes(t)).length;
+        if (titleScore > 0 || bodyScore > 0) scored.push({ section: section.trim(), titleScore, bodyScore, len: section.length });
       }
     }
-    if (matched.length) {
-      let out = matched.slice(0, 3).join("\n\n---\n\n");
-      return truncate(out, 6000);
+    if (scored.length) {
+      // Any title match beats a body-only mention; WITHIN that, prefer the
+      // longer/more substantive transcript over raw token-count — a short
+      // meeting whose title happens to spell out every word ("Beta Bionics
+      // Salesforce form test") is often a quick one-off, while the real
+      // recurring call may only be abbreviated in its title ("BetaB
+      // Internal Weekly Cadence") and would otherwise lose on token count.
+      scored.sort((a, b) => ((b.titleScore > 0) - (a.titleScore > 0)) || (b.len - a.len));
+      const out = scored.slice(0, 2).map(s => s.section).join("\n\n---\n\n");
+      return truncate(out, 16000);
     }
     return "No meeting matching \"" + keyword + "\" found in the most recent transcript doc(s). " +
-      "Meetings that WERE found: " + truncate(allTitles.join(" | "), 1500);
+      "Meetings that WERE found: " + truncate(allTitles.join(" | "), 1500) +
+      " — try calling this again with a keyword closer to one of those titles.";
   }
 
   async function tGetBudgetSnapshot(input){
