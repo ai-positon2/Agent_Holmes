@@ -1,0 +1,540 @@
+<title>Client Feedback Agent</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<style>
+:root{
+  --ground:#F4F6F9; --surface:#FFFFFF; --surface2:#EBEFF5; --raise:#FFFFFF;
+  --ink:#12161C; --muted:#5C6675; --faint:#8A94A4;
+  --line:#DCE2EC; --line2:#C7D0DE;
+  --accent:#22346B; --accent-soft:#E4E9F5;
+  --over:#A8500C; --over-bg:#FBEDE0; --over-line:#D98B3E;
+  --under:#1B5B8C; --under-bg:#E4EFF8; --under-line:#5AA3D4;
+  --ontrack:#166B45; --ontrack-bg:#E2F1E9; --ontrack-line:#5CB78C;
+  --unclear:#63548C; --unclear-bg:#EDEAF6; --unclear-line:#9C8CCB;
+  --shadow:0 1px 2px rgba(18,22,28,.05),0 4px 14px rgba(18,22,28,.05);
+  --r:14px;
+  --bubble-user:#22346B; --bubble-user-ink:#F4F6F9;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --ground:#0E1116; --surface:#161B23; --surface2:#1D242E; --raise:#1B2230;
+  --ink:#E9ECF1; --muted:#98A2B2; --faint:#6E7A8B;
+  --line:#28313D; --line2:#374253;
+  --accent:#8AA3E0; --accent-soft:#1D2740;
+  --over:#E8A05C; --over-bg:#2E2114; --over-line:#B4712C;
+  --under:#6FB4E4; --under-bg:#132434; --under-line:#3B7CAD;
+  --ontrack:#68C79A; --ontrack-bg:#12281E; --ontrack-line:#3C8C64;
+  --unclear:#B0A2E0; --unclear-bg:#211C33; --unclear-line:#7263A8;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+  --bubble-user:#3A4E8F; --bubble-user-ink:#F4F6F9;
+}}
+:root[data-theme="dark"]{
+  --ground:#0E1116; --surface:#161B23; --surface2:#1D242E; --raise:#1B2230;
+  --ink:#E9ECF1; --muted:#98A2B2; --faint:#6E7A8B;
+  --line:#28313D; --line2:#374253;
+  --accent:#8AA3E0; --accent-soft:#1D2740;
+  --over:#E8A05C; --over-bg:#2E2114; --over-line:#B4712C;
+  --under:#6FB4E4; --under-bg:#132434; --under-line:#3B7CAD;
+  --ontrack:#68C79A; --ontrack-bg:#12281E; --ontrack-line:#3C8C64;
+  --unclear:#B0A2E0; --unclear-bg:#211C33; --unclear-line:#7263A8;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 14px rgba(0,0,0,.3);
+  --bubble-user:#3A4E8F; --bubble-user-ink:#F4F6F9;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  background:var(--ground); color:var(--ink); margin:0;
+  font-family:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  font-size:14px; line-height:1.55; -webkit-font-smoothing:antialiased;
+  display:flex; flex-direction:column; height:100vh; overflow:hidden;
+}
+.num{font-family:"IBM Plex Mono",ui-monospace,Menlo,monospace;font-variant-numeric:tabular-nums}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--line);background:var(--surface);flex:0 0 auto}
+.mast-in{max-width:840px;margin:0 auto;padding:16px 20px;display:flex;
+  align-items:center;justify-content:space-between;gap:12px}
+.mast-id{display:flex;align-items:baseline;gap:10px;min-width:0}
+.mast h1{font-family:Archivo,sans-serif;font-weight:700;font-size:18px;
+  letter-spacing:-.015em;margin:0;display:flex;align-items:baseline;gap:9px;white-space:nowrap}
+.mast .dot{width:7px;height:7px;border-radius:50%;background:var(--unclear);
+  display:inline-block;transform:translateY(-1px)}
+.mast .tag{font-size:11.5px;color:var(--faint);font-family:Archivo,sans-serif;
+  letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mast a.back{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;color:var(--muted);
+  text-decoration:none;display:flex;align-items:center;gap:5px;flex:0 0 auto}
+.mast a.back:hover{color:var(--accent)}
+
+.sources{display:flex;gap:6px;flex-wrap:wrap;padding:0 20px 12px;max-width:840px;margin:0 auto;width:100%}
+.src-pill{font-family:Archivo,sans-serif;font-size:10.5px;font-weight:600;letter-spacing:.03em;
+  padding:3px 9px 3px 7px;border-radius:999px;display:inline-flex;align-items:center;gap:5px;
+  background:var(--surface2);color:var(--muted);border:1px solid var(--line)}
+.src-pill .b{width:6px;height:6px;border-radius:50%;background:var(--faint)}
+.src-pill[data-state="connected"]{color:var(--ontrack);background:var(--ontrack-bg);border-color:var(--ontrack-line)}
+.src-pill[data-state="connected"] .b{background:var(--ontrack)}
+.src-pill[data-state="needs_reauth"]{color:var(--over);background:var(--over-bg);border-color:var(--over-line)}
+.src-pill[data-state="needs_reauth"] .b{background:var(--over)}
+
+/* ---------- chat column ---------- */
+.chat-wrap{flex:1 1 auto;overflow-y:auto;min-height:0}
+.chat-in{max-width:840px;margin:0 auto;padding:24px 20px 12px;display:flex;flex-direction:column;gap:18px}
+
+.welcome{padding:20px 0 8px}
+.welcome .eyebrow{font-family:Archivo,sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.14em;text-transform:uppercase;color:var(--unclear);margin:0 0 12px}
+.welcome h2{font-family:Archivo,sans-serif;font-weight:700;font-size:26px;
+  letter-spacing:-.02em;margin:0 0 10px;text-wrap:balance}
+.welcome p{color:var(--muted);font-size:14.5px;max-width:52ch;margin:0 0 22px;line-height:1.6}
+.chips{display:flex;flex-direction:column;gap:8px;max-width:480px}
+.chip{text-align:left;background:var(--surface);border:1px solid var(--line);border-radius:10px;
+  padding:12px 14px;font-family:"IBM Plex Sans",sans-serif;font-size:13.5px;color:var(--ink);
+  cursor:pointer;transition:border-color .14s,transform .14s;box-shadow:var(--shadow)}
+.chip:hover{border-color:var(--accent);transform:translateY(-1px)}
+.chip .q{color:var(--faint);font-family:"IBM Plex Mono",monospace;font-size:11px;margin-right:6px}
+
+.msg{display:flex;gap:10px;max-width:100%}
+.msg.user{justify-content:flex-end}
+.msg .bubble{border-radius:14px;padding:11px 14px;max-width:76%;font-size:14px;line-height:1.6;
+  white-space:pre-wrap;word-wrap:break-word}
+.msg.user .bubble{background:var(--bubble-user);color:var(--bubble-user-ink);border-bottom-right-radius:4px}
+.msg.assistant .bubble{background:var(--surface);border:1px solid var(--line);color:var(--ink);
+  border-bottom-left-radius:4px;box-shadow:var(--shadow)}
+.msg.assistant .bubble.thinking{color:var(--faint);font-style:italic}
+.msg .avatar{flex:0 0 auto;width:26px;height:26px;border-radius:50%;background:var(--accent-soft);
+  color:var(--accent);display:flex;align-items:center;justify-content:center;
+  font-family:Archivo,sans-serif;font-weight:700;font-size:11px;margin-top:2px}
+
+.tool-trace{display:flex;flex-wrap:wrap;gap:5px;margin:6px 0 0 36px}
+.tool-tag{font-family:"IBM Plex Mono",monospace;font-size:10.5px;color:var(--unclear);
+  background:var(--unclear-bg);border:1px solid var(--unclear-line);border-radius:6px;padding:2px 7px}
+
+.status-line{font-family:"IBM Plex Mono",monospace;font-size:11.5px;color:var(--faint);
+  margin:2px 0 0 36px;min-height:14px}
+
+.err-bubble{background:var(--over-bg);border:1px solid var(--over-line);color:var(--over);
+  border-radius:10px;padding:10px 13px;font-size:13px;margin-left:36px;max-width:76%}
+
+/* ---------- composer ---------- */
+.composer{flex:0 0 auto;border-top:1px solid var(--line);background:var(--surface)}
+.composer-in{max-width:840px;margin:0 auto;padding:14px 20px;display:flex;gap:10px;align-items:flex-end}
+textarea{flex:1;resize:none;border:1px solid var(--line2);border-radius:12px;padding:11px 13px;
+  font-family:"IBM Plex Sans",sans-serif;font-size:14px;line-height:1.5;color:var(--ink);
+  background:var(--ground);max-height:140px;min-height:44px}
+textarea:focus{outline:2px solid var(--accent);outline-offset:1px;border-color:transparent}
+button.send{font-family:Archivo,sans-serif;font-weight:700;font-size:12.5px;letter-spacing:.02em;
+  background:var(--accent);color:var(--ground);border:none;border-radius:10px;padding:0 18px;height:44px;
+  cursor:pointer;white-space:nowrap;transition:opacity .14s}
+button.send:disabled{opacity:.45;cursor:default}
+button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
+  background:var(--over-bg);color:var(--over);border:1px solid var(--over-line);border-radius:10px;
+  padding:0 14px;height:44px;cursor:pointer}
+.foot-note{font-size:11px;color:var(--faint);text-align:center;padding:0 20px 12px;max-width:840px;margin:0 auto}
+
+.hidden-note{max-width:840px;margin:40px auto;padding:0 20px;text-align:center;color:var(--muted);font-size:13.5px}
+
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media (max-width:600px){.msg .bubble{max-width:88%}}
+</style>
+
+<header class="mast">
+  <div class="mast-in">
+    <div class="mast-id">
+      <h1><span class="dot"></span>Client Feedback Agent</h1>
+      <span class="tag">Position2 · PPC Ops</span>
+    </div>
+    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab">&larr; Agent Desk</a>
+  </div>
+  <div class="sources" id="sources"></div>
+</header>
+
+<main class="chat-wrap" id="chatWrap">
+  <div class="chat-in" id="chatIn">
+    <div class="welcome" id="welcome">
+      <p class="eyebrow">Ask about any client</p>
+      <h2>What do you need to know?</h2>
+      <p>Pulls live from Slack, email, and daily meeting transcripts — nothing
+        is pre-indexed, every answer is a fresh look at what's actually there.</p>
+      <div class="chips" id="chips">
+        <button class="chip"><span class="q">meetings</span>Give me a summary of the last Riccobene meeting</button>
+        <button class="chip"><span class="q">budget</span>What's the latest budget for Eventgroove?</button>
+        <button class="chip"><span class="q">slack</span>What's been said in Slack about Beta Bionics this week?</button>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div class="composer">
+  <div class="composer-in">
+    <textarea id="input" rows="1" placeholder="Ask about a client, a meeting, a budget…" aria-label="Message"></textarea>
+    <button class="send" id="sendBtn">Send</button>
+  </div>
+  <p class="foot-note" id="footNote">Connecting…</p>
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  // ---- known Position2 doc IDs (public folder/file identifiers, not secrets) ----
+  const MEETING_FOLDER_ID = "1hc1fPOHKsUNGbqBClcb4G7qwa5T38KYf";
+  const BUDGET_TRACKER_ID = "1X_HjD0NUzp1br9SsLV7AICdS_SokdYuzbXc75ENVJ7A";
+
+  const chatIn = document.getElementById("chatIn");
+  const chatWrap = document.getElementById("chatWrap");
+  const welcome = document.getElementById("welcome");
+  const input = document.getElementById("input");
+  const sendBtn = document.getElementById("sendBtn");
+  const footNote = document.getElementById("footNote");
+  const sourcesEl = document.getElementById("sources");
+
+  let mcp = null, sample = null;
+  let serverCache = {};
+  let turns = [];           // SampleMessage[] the page keeps
+  let ctl = null;           // current AbortController
+  let statusEl = null;      // live "Searching…" line for the in-flight answer
+
+  const INSTRUCTIONS =
+    "You are the Client Feedback Agent, an internal tool for Position2's PPC " +
+    "team. An account manager is asking you questions about their clients. " +
+    "Answer using the tools provided — search before you answer anything " +
+    "that depends on real data, never guess a number, a name, or a date. " +
+    "Today's date is " + new Date().toISOString().slice(0,10) + ". " +
+    "When a question names no specific meeting or date ('the last meeting', " +
+    "'this week'), use get_meeting_transcript or search tools to find " +
+    "candidates, then pick the most recent one yourself unless it's " +
+    "genuinely ambiguous (e.g. two different clients could match) — in " +
+    "that case ask a short clarifying question instead of guessing. Keep " +
+    "answers tight and scannable: short paragraphs or a few bullets, no " +
+    "filler preamble. Say plainly when a tool found nothing, rather than " +
+    "inventing an answer.";
+
+  function scrollToEnd(){ chatWrap.scrollTop = chatWrap.scrollHeight; }
+
+  function addMessage(role, text){
+    welcome.style.display = "none";
+    const row = document.createElement("div");
+    row.className = "msg " + role;
+    if (role === "assistant") {
+      const av = document.createElement("div");
+      av.className = "avatar"; av.textContent = "CF";
+      row.appendChild(av);
+    }
+    const bub = document.createElement("div");
+    bub.className = "bubble";
+    bub.textContent = text;
+    row.appendChild(bub);
+    chatIn.appendChild(row);
+    scrollToEnd();
+    return bub;
+  }
+
+  function addStatusLine(){
+    const el = document.createElement("div");
+    el.className = "status-line";
+    chatIn.appendChild(el);
+    scrollToEnd();
+    return el;
+  }
+
+  function addToolTrace(names){
+    if (!names.length) return;
+    const wrap = document.createElement("div");
+    wrap.className = "tool-trace";
+    names.forEach(n => {
+      const t = document.createElement("span");
+      t.className = "tool-tag"; t.textContent = n;
+      wrap.appendChild(t);
+    });
+    chatIn.appendChild(wrap);
+    scrollToEnd();
+  }
+
+  function addError(msg){
+    const row = document.createElement("div");
+    row.className = "msg assistant";
+    const err = document.createElement("div");
+    err.className = "err-bubble";
+    err.textContent = msg;
+    row.appendChild(err);
+    chatIn.appendChild(row);
+    scrollToEnd();
+  }
+
+  // ---- connector plumbing --------------------------------------------------
+  async function getServer(name){
+    if (!mcp) throw new Error("mcp capability unavailable");
+    if (!serverCache[name]) serverCache[name] = await mcp.server(name);
+    return serverCache[name];
+  }
+
+  function setStatus(text){ if (statusEl) statusEl.textContent = text; }
+
+  function truncate(s, n){
+    s = String(s == null ? "" : s);
+    return s.length > n ? s.slice(0, n) + "\n…(truncated)" : s;
+  }
+
+  // ---- page tools Claude may call ------------------------------------------
+  const usedTools = [];
+
+  async function tSearchSlack(input){
+    usedTools.push("search_slack");
+    setStatus('Searching Slack for "' + input.query + '"…');
+    const slack = await getServer("Slack");
+    const res = await slack.slack_search_public_and_private({
+      query: String(input.query || ""), limit: 8, include_context: false,
+    });
+    const text = (res && res.results) ? res.results : JSON.stringify(res);
+    return truncate(text, 5000);
+  }
+
+  async function tReadSlackChannel(input){
+    usedTools.push("read_slack_channel");
+    setStatus("Reading Slack channel " + input.channel_id + "…");
+    const slack = await getServer("Slack");
+    const res = await slack.slack_read_channel({
+      channel_id: String(input.channel_id || ""),
+      limit: Math.min(Number(input.limit) || 30, 50),
+      response_format: "concise",
+    });
+    const text = (res && res.messages) ? res.messages : JSON.stringify(res);
+    return truncate(text, 5000);
+  }
+
+  async function tGetMeetingTranscript(input){
+    usedTools.push("get_meeting_transcript");
+    const keyword = String(input.keyword || "").trim();
+    setStatus('Looking for a "' + keyword + '" meeting in the daily transcripts…');
+    const drive = await getServer("Google Drive");
+    const listing = await drive.search_files({
+      query: "parentId = '" + MEETING_FOLDER_ID + "'",
+      pageSize: 10,
+    });
+    const files = (listing && listing.files) || [];
+    if (!files.length) return "No meeting-transcript documents found in the Meeting Notes folder yet.";
+    files.sort((a, b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
+    const candidates = files.slice(0, 2);
+
+    const allTitles = [];
+    const matched = [];
+    for (const f of candidates) {
+      setStatus("Reading " + f.title + "…");
+      const content = await drive.read_file_content({ fileId: f.id });
+      const text = (content && content.fileContent) ? content.fileContent : "";
+      const marks = [];
+      const re = /Meeting:\s*([^\n]+)/g;
+      let m;
+      while ((m = re.exec(text))) marks.push({ idx: m.index, title: m[1].trim() });
+      for (let i = 0; i < marks.length; i++) {
+        const start = marks[i].idx;
+        const end = i + 1 < marks.length ? marks[i + 1].idx : text.length;
+        const section = text.slice(start, end);
+        allTitles.push(marks[i].title);
+        if (!keyword || section.toLowerCase().includes(keyword.toLowerCase())) {
+          matched.push(section.trim());
+        }
+      }
+    }
+    if (matched.length) {
+      let out = matched.slice(0, 3).join("\n\n---\n\n");
+      return truncate(out, 6000);
+    }
+    return "No meeting matching \"" + keyword + "\" found in the most recent transcript doc(s). " +
+      "Meetings that WERE found: " + truncate(allTitles.join(" | "), 1500);
+  }
+
+  async function tGetBudgetSnapshot(input){
+    usedTools.push("get_budget_snapshot");
+    const client = String(input.client || "").trim();
+    setStatus("Reading the Budget Tracker" + (client ? " for " + client : "") + "…");
+    const drive = await getServer("Google Drive");
+    const content = await drive.read_file_content({ fileId: BUDGET_TRACKER_ID });
+    let text = (content && content.fileContent) ? content.fileContent : "";
+    if (client) {
+      const lines = text.split("\n");
+      const hit = lines.filter(l => l.toLowerCase().includes(client.toLowerCase()));
+      if (hit.length) text = hit.join("\n");
+    }
+    return truncate(text, 5000);
+  }
+
+  async function tSearchEmail(input){
+    usedTools.push("search_email");
+    setStatus('Searching email for "' + input.query + '"…');
+    const gmail = await getServer("Gmail");
+    const res = await gmail.search_threads({
+      query: String(input.query || ""), pageSize: 8, view: "THREAD_VIEW_MINIMAL",
+    });
+    const threads = (res && res.threads) || [];
+    const compact = threads.map(t => {
+      const msg = (t.messages && t.messages[0]) || {};
+      return {
+        threadId: t.id, subject: msg.subject, from: msg.sender,
+        date: msg.date, snippet: (msg.snippet || "").slice(0, 200),
+      };
+    });
+    return truncate(JSON.stringify(compact, null, 2), 5000);
+  }
+
+  async function tReadEmail(input){
+    usedTools.push("read_email");
+    setStatus("Reading email thread…");
+    const gmail = await getServer("Gmail");
+    const res = await gmail.get_thread({
+      threadId: String(input.thread_id || ""), messageFormat: "PLAIN_TEXT",
+    });
+    const msgs = (res && res.messages) || [];
+    const text = msgs.map(m => "From: " + m.sender + "\nDate: " + m.date +
+      "\nSubject: " + m.subject + "\n\n" + (m.plaintextBody || m.snippet || "")).join("\n\n====\n\n");
+    return truncate(text, 5000);
+  }
+
+  const TOOLS = [
+    { name: "search_slack",
+      description: "Search Slack messages across every channel and DM the viewer can see. Returns matching messages with channel, author, timestamp, and text. Use for internal discussion, decisions, or context about a client, project, or topic.",
+      inputSchema: { type: "object", properties: { query: { type: "string", description: "Slack search terms, optionally with modifiers like in:#channel-name or from:@user" } }, required: ["query"] },
+      execute: tSearchSlack },
+    { name: "read_slack_channel",
+      description: "Read the recent message history of one Slack channel, given its channel ID (find one via search_slack first — results show 'Channel: #name (ID: Cxxxx)').",
+      inputSchema: { type: "object", properties: { channel_id: { type: "string" }, limit: { type: "number", description: "Max messages, default 30" } }, required: ["channel_id"] },
+      execute: tReadSlackChannel },
+    { name: "get_meeting_transcript",
+      description: "Find and read a meeting transcript from Position2's daily meeting-notes Drive folder. Give a client name or topic keyword; returns the matching meeting section(s) (title, date, full transcript) from the most recent daily doc(s), or a list of meeting titles found if nothing matches the keyword.",
+      inputSchema: { type: "object", properties: { keyword: { type: "string", description: "Client name or topic to find, e.g. 'Riccobene' or 'Beta Bionics'" } }, required: ["keyword"] },
+      execute: tGetMeetingTranscript },
+    { name: "get_budget_snapshot",
+      description: "Read Position2's Budget Tracker sheet (allocated budgets, target CPA/ROAS, status, channel per account). Optionally filter to rows mentioning one client.",
+      inputSchema: { type: "object", properties: { client: { type: "string", description: "Client or account name to filter to, e.g. 'Eventgroove'. Omit for the whole sheet." } } },
+      execute: tGetBudgetSnapshot },
+    { name: "search_email",
+      description: "Search the viewer's Gmail using Gmail search syntax (from:, to:, subject:, after:, newer_than:, etc). Returns compact results: subject, sender, date, snippet, and thread ID for follow-up reads.",
+      inputSchema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] },
+      execute: tSearchEmail },
+    { name: "read_email",
+      description: "Read the full plain-text content of one email thread, given a thread ID from search_email.",
+      inputSchema: { type: "object", properties: { thread_id: { type: "string" } }, required: ["thread_id"] },
+      execute: tReadEmail },
+  ];
+
+  // ---- send flow ------------------------------------------------------------
+  async function send(text){
+    text = text.trim();
+    if (!text || !sample) return;
+
+    addMessage("user", text);
+    turns.push({ role: "user", content: text });
+    input.value = ""; autoGrow();
+    sendBtn.disabled = true;
+    sendBtn.textContent = "Send"; sendBtn.className = "send"; // reset if it was "Stop"
+
+    const bub = addMessage("assistant", "Thinking…");
+    bub.classList.add("thinking");
+    statusEl = addStatusLine();
+    usedTools.length = 0;
+    ctl = new AbortController();
+
+    let full = "";
+    try {
+      const res = await sample(
+        [{ role: "user", content: INSTRUCTIONS }, ...turns],
+        {
+          signal: ctl.signal,
+          tools: TOOLS,
+          onText: (u) => { bub.classList.remove("thinking"); bub.textContent = u.text; full = u.text; scrollToEnd(); },
+        }
+      );
+      full = res.text;
+      bub.classList.remove("thinking");
+      bub.textContent = full;
+      turns.push({ role: "assistant", content: full });
+      setStatus("");
+      addToolTrace(Array.from(new Set(usedTools)));
+      if (res.truncated) addError("The answer was cut short — try asking for less at once.");
+    } catch (e) {
+      bub.classList.remove("thinking");
+      if (e && e.text) { bub.textContent = e.text; turns.push({ role: "assistant", content: e.text }); }
+      else { bub.remove(); }
+      setStatus("");
+      addError(copyForError(e));
+    } finally {
+      sendBtn.disabled = false;
+      ctl = null;
+      scrollToEnd();
+    }
+  }
+
+  function copyForError(e){
+    const code = e && e.code;
+    if (code === "cancelled") return "Stopped.";
+    if (code === "not_granted") return "This page isn't allowed to use Claude for your account — ask an admin to enable it.";
+    if (code === "rate_limited") return "Too many requests right now — try again in a moment.";
+    if (code === "tools_unavailable") return "This view can't run live data tools right now.";
+    if (code === "empty_completion") return "No answer came back — try rephrasing.";
+    return "Something went wrong answering that (" + (code || "unknown") + "). Try again.";
+  }
+
+  function autoGrow(){
+    input.style.height = "auto";
+    input.style.height = Math.min(input.scrollHeight, 140) + "px";
+  }
+
+  input.addEventListener("input", autoGrow);
+  input.addEventListener("keydown", (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(input.value); }
+  });
+  sendBtn.addEventListener("click", () => send(input.value));
+  document.getElementById("chips").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip");
+    if (chip) send(chip.textContent.replace(/^\s*\S+\s*/, ""));
+  });
+
+  // ---- boot -------------------------------------------------------------
+  function renderSourcePill(name, state){
+    const p = document.createElement("span");
+    p.className = "src-pill"; p.dataset.state = state || "unknown";
+    p.innerHTML = '<span class="b"></span>' + name;
+    sourcesEl.appendChild(p);
+  }
+
+  async function boot(){
+    if (!window.claude || !window.claude.use) {
+      footNote.textContent = "This page needs to be opened inside Claude to work.";
+      sendBtn.disabled = true;
+      return;
+    }
+    sample = await window.claude.use("sample");
+    mcp = await window.claude.use("mcp");
+
+    if (!sample) {
+      chatIn.innerHTML = "";
+      const n = document.createElement("div");
+      n.className = "hidden-note";
+      n.textContent = "Claude access isn't available on this view, so the agent can't answer questions here.";
+      chatIn.appendChild(n);
+      footNote.textContent = "Unavailable in this view.";
+      sendBtn.disabled = true;
+      return;
+    }
+
+    footNote.textContent = "Reads live from Slack, Drive, and Gmail with your own access — nothing is stored.";
+
+    if (mcp) {
+      try {
+        const { servers } = await mcp.listTools();
+        const byName = {};
+        servers.forEach(s => { byName[s.server] = s.authStatus; });
+        ["Slack", "Google Drive", "Gmail"].forEach(n => renderSourcePill(n, byName[n] || "unknown"));
+      } catch (e) {
+        ["Slack", "Google Drive", "Gmail"].forEach(n => renderSourcePill(n, "unknown"));
+      }
+    } else {
+      const n = document.createElement("div");
+      n.className = "hidden-note";
+      n.textContent = "Live data connectors aren't available on this view — answers will be limited to general knowledge.";
+      chatIn.insertBefore(n, chatIn.firstChild);
+    }
+  }
+
+  boot();
+})();
+</script>
