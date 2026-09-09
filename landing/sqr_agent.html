@@ -125,6 +125,17 @@ details.ref summary{cursor:pointer;font-family:Archivo,sans-serif;font-size:12.5
 
 .empty{color:var(--faint);font-size:13px;text-align:center;padding:40px 0}
 .err{background:var(--over-bg);border:1px solid var(--over-line);color:var(--over);border-radius:10px;padding:11px 14px;font-size:13px;margin-bottom:14px}
+
+.overlay{position:fixed;inset:0;background:color-mix(in srgb, var(--ground) 82%, transparent);
+  backdrop-filter:blur(2px);display:flex;align-items:center;justify-content:center;z-index:50}
+.overlay-card{background:var(--surface);border:1px solid var(--line);border-radius:16px;
+  box-shadow:var(--shadow);padding:32px 40px;text-align:center;min-width:280px}
+.spinner{width:30px;height:30px;border-radius:50%;border:3px solid var(--line2);
+  border-top-color:var(--accent);margin:0 auto 16px;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.overlay-ttl{font-family:Archivo,sans-serif;font-weight:700;font-size:15px;margin-bottom:6px}
+.overlay-status{font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--muted)}
+@media (prefers-reduced-motion:reduce){.spinner{animation:none;border-top-color:var(--line2)}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 </style>
 
@@ -181,6 +192,14 @@ details.ref summary{cursor:pointer;font-family:Archivo,sans-serif;font-size:12.5
   <div id="results"></div>
 </main>
 
+<div class="overlay" id="overlay" hidden>
+  <div class="overlay-card">
+    <div class="spinner" aria-hidden="true"></div>
+    <div class="overlay-ttl">Analyzing…</div>
+    <div class="overlay-status" id="overlayStatus">Starting…</div>
+  </div>
+</div>
+
 <script>
 (function(){
 "use strict";
@@ -209,7 +228,14 @@ function parseCSV(text){
   }
   if (field.length || row.length) { row.push(field); rows.push(row); }
 
-  let headerIdx = rows.findIndex(r => r.some(c => /search term|negative keyword|^keyword$/i.test(String(c).trim())));
+  // Google Ads exports lead with a title line ("Search terms report") and
+  // a date-range line before the real header row — matching "search term"
+  // as a SUBSTRING wrongly picks the title line itself ("Search terms
+  // report" contains it). Require an exact cell match instead, and require
+  // more than one column (the title/date lines are always single-cell).
+  const HEADER_CELLS = ["search term", "negative keyword", "keyword"];
+  let headerIdx = rows.findIndex(r => r.length > 1 && r.some(c => HEADER_CELLS.includes(String(c).trim().toLowerCase())));
+  if (headerIdx < 0) headerIdx = rows.findIndex(r => r.some(c => HEADER_CELLS.includes(String(c).trim().toLowerCase())));
   if (headerIdx < 0) headerIdx = 0;
   const header = rows[headerIdx].map(h => String(h).trim());
   const out = [];
@@ -458,6 +484,10 @@ async function runAnalysis(ruleset, termsCsv, keywordsCsv, negsCsv, statusCb){
     }))
     .filter(r => r.term && !/^total:/i.test(r.term));
 
+  if (!rows.length) {
+    throw new Error("No search-term rows found in that file — check it's the Search terms report export (with a 'Search term' column) and try again.");
+  }
+
   const existingKeywords = new Set();
   if (keywordsCsv) parseCSV(keywordsCsv).rows.forEach(r => {
     const kw = String(pick(r, "Keyword")).trim().toLowerCase().replace(/[\[\]"]/g, "");
@@ -557,6 +587,8 @@ const runBtn = document.getElementById("runBtn");
 const dlBtn = document.getElementById("dlBtn");
 const statusLine = document.getElementById("statusLine");
 const resultsEl = document.getElementById("results");
+const overlay = document.getElementById("overlay");
+const overlayStatus = document.getElementById("overlayStatus");
 
 const files = { terms: null, keywords: null, negs: null };
 
@@ -585,20 +617,26 @@ wireDrop("negs", "file-negs", "drop-negs", "file-negs-name");
 
 function updateRunEnabled(){ runBtn.disabled = !files.terms; }
 
-function setStatus(t){ statusLine.textContent = t; }
+function setStatus(t){ statusLine.textContent = t; overlayStatus.textContent = t; }
 
 runBtn.addEventListener("click", async () => {
   runBtn.disabled = true; dlBtn.disabled = true;
   resultsEl.innerHTML = "";
+  overlay.hidden = false;
+  setStatus("Starting…");
   try {
     const ruleset = RULESETS[acctSel.value];
     lastResult = await runAnalysis(ruleset, files.terms, files.keywords, files.negs, setStatus);
+    overlay.hidden = true;
     setStatus("Done — " + lastResult.summary.totalRows + " rows classified.");
     renderResults(lastResult);
     dlBtn.disabled = false;
+    resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
   } catch (e) {
+    overlay.hidden = true;
     resultsEl.innerHTML = '<div class="err">Something went wrong: ' + (e && e.message ? e.message : String(e)) + "</div>";
     setStatus("Failed.");
+    resultsEl.scrollIntoView({ behavior: "smooth", block: "start" });
   } finally { runBtn.disabled = false; }
 });
 
