@@ -209,44 +209,67 @@ details.ref summary{cursor:pointer;font-family:Archivo,sans-serif;font-size:12.5
 // that contain commas), and finds the real header row even when Google
 // prepends a title/date-range line before it.
 // =====================================================================
-function parseCSV(text){
-  text = text.replace(/^﻿/, "").replace(/\r\n/g, "\n");
-  const rows = [];
-  let row = [], field = "", inQuotes = false;
-  for (let i = 0; i < text.length; i++){
-    const c = text[i];
+function cleanText(text){
+  // Strip null bytes (shows up once per character when a UTF-16 export
+  // gets misread as UTF-8) and zero-width/BOM characters some tools leave
+  // in exported cells.
+  return String(text).replace(/\u0000/g, "").replace(/[\u200B\uFEFF]/g, "").replace(/\r\n/g, "\n");
+}
+
+function splitCSVLine(line, delim){
+  const out = []; let field = "", inQuotes = false;
+  for (let i = 0; i < line.length; i++){
+    const c = line[i];
     if (inQuotes){
-      if (c === '"'){
-        if (text[i+1] === '"'){ field += '"'; i++; } else inQuotes = false;
-      } else field += c;
+      if (c === '"'){ if (line[i+1] === '"'){ field += '"'; i++; } else inQuotes = false; }
+      else field += c;
     } else {
       if (c === '"') inQuotes = true;
-      else if (c === ",") { row.push(field); field = ""; }
-      else if (c === "\n") { row.push(field); rows.push(row); row = []; field = ""; }
+      else if (c === delim) { out.push(field); field = ""; }
       else field += c;
     }
   }
-  if (field.length || row.length) { row.push(field); rows.push(row); }
+  out.push(field);
+  return out;
+}
+
+function normCell(c){ return String(c == null ? "" : c).trim().toLowerCase(); }
+function normKey(c){ return normCell(c).replace(/[^a-z0-9]/g, ""); }
+
+function parseCSV(text){
+  text = cleanText(text);
+  const lines = text.split("\n").filter((l, i, arr) => l.length || i < arr.length - 1);
+
+  // Auto-detect the delimiter from the first non-empty line — most exports
+  // are comma-separated, but some locales/tools use semicolon or tab.
+  const sampleLine = lines.find(l => l.trim().length) || "";
+  const delim = [",", ";", "\t"].reduce((best, d) => (sampleLine.split(d).length > sampleLine.split(best).length ? d : best), ",");
+
+  const rows = lines.map(l => splitCSVLine(l, delim));
 
   // Google Ads exports lead with a title line ("Search terms report") and
   // a date-range line before the real header row — matching "search term"
   // as a SUBSTRING wrongly picks the title line itself ("Search terms
-  // report" contains it). Require an exact cell match instead, and require
-  // more than one column (the title/date lines are always single-cell).
-  const HEADER_CELLS = ["search term", "negative keyword", "keyword"];
-  let headerIdx = rows.findIndex(r => r.length > 1 && r.some(c => HEADER_CELLS.includes(String(c).trim().toLowerCase())));
-  if (headerIdx < 0) headerIdx = rows.findIndex(r => r.some(c => HEADER_CELLS.includes(String(c).trim().toLowerCase())));
-  if (headerIdx < 0) headerIdx = 0;
-  const header = rows[headerIdx].map(h => String(h).trim());
+  // report" contains it). Match on a normalized (letters+digits only)
+  // whole-cell comparison instead, and require more than one column (the
+  // title/date lines are always single-cell).
+  const HEADER_CELLS = ["searchterm", "searchquery", "query", "negativekeyword", "keyword"];
+  const isHeaderRow = r => r.some(c => HEADER_CELLS.includes(normKey(c)));
+  let headerIdx = rows.findIndex(r => r.length > 1 && isHeaderRow(r));
+  if (headerIdx < 0) headerIdx = rows.findIndex(isHeaderRow);
+
+  const header = headerIdx >= 0 ? rows[headerIdx].map(h => String(h).trim()) : [];
   const out = [];
-  for (let i = headerIdx + 1; i < rows.length; i++){
-    const r = rows[i];
-    if (!r.length || (r.length === 1 && !r[0])) continue;
-    const obj = {};
-    header.forEach((h, j) => obj[h] = r[j] !== undefined ? r[j] : "");
-    out.push(obj);
+  if (headerIdx >= 0) {
+    for (let i = headerIdx + 1; i < rows.length; i++){
+      const r = rows[i];
+      if (!r.length || (r.length === 1 && !r[0])) continue;
+      const obj = {};
+      header.forEach((h, j) => obj[h] = r[j] !== undefined ? r[j] : "");
+      out.push(obj);
+    }
   }
-  return { header, rows: out };
+  return { header, rows: out, headerFound: headerIdx >= 0, preview: rows.slice(0, 5), delim };
 }
 
 function pick(row, ...names){
@@ -485,7 +508,11 @@ async function runAnalysis(ruleset, termsCsv, keywordsCsv, negsCsv, statusCb){
     .filter(r => r.term && !/^total:/i.test(r.term));
 
   if (!rows.length) {
-    throw new Error("No search-term rows found in that file — check it's the Search terms report export (with a 'Search term' column) and try again.");
+    if (!termsParsed.headerFound) {
+      const preview = termsParsed.preview.map(r => "[" + r.join(" | ") + "]").join("  ");
+      throw new Error("Couldn't find a 'Search term' column in that file. First few lines detected: " + preview);
+    }
+    throw new Error("Found a 'Search term' column, but every row was empty or a 'Total:' subtotal — check the file has real data rows and try again. Columns found: " + termsParsed.header.join(", "));
   }
 
   const existingKeywords = new Set();
