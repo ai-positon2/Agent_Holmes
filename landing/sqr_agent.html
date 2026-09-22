@@ -549,6 +549,41 @@ const MCHALE = {
 };
 
 // =====================================================================
+// BETA BIONICS ruleset — PLACEHOLDER, not a port of the real client skill.
+// The sqr-analysis-beta-bionics skill is confirmed to exist and be enabled
+// on the account, but this session's Skill tool cannot reach it (Unknown
+// skill error, retried after a session refresh) and it isn't synced to
+// local disk the way Riccobene/OIA's skill files were. Rather than guess
+// at its actual priority waterfall, known-issue log, or exact word lists,
+// this ruleset only encodes facts independently verifiable from the
+// public iLet Bionic Pancreas product record; everything else defers to
+// the model. Replace this once the real skill text is available.
+// =====================================================================
+const BETA_BIONICS = {
+  id: "beta_bionics", label: "Beta Bionics (iLet Bionic Pancreas)",
+  note: "<b>Placeholder — not ported from the real client skill.</b> sqr-analysis-beta-bionics is confirmed to exist and be enabled on your account, but this session's Skill tool returns ‘Unknown skill’ (retried, same result) and the skill isn't synced to local disk the way Riccobene/OIA's were — so its actual priority waterfall, exact word lists, and known-issue log aren't in hand. This ruleset only encodes independently-verifiable public facts: the iLet Bionic Pancreas is FDA-cleared for <b>type 1</b> diabetes, ages 6+, US-only, and its real named competitors are Omnipod/Insulet, Tandem (t:slim X2 / Control-IQ), Medtronic MiniMed, and twiist. Type 2 diabetes mentions and Medicare/Medicaid mentions are routed to <b>Client Review</b> rather than guessed, since the actual client policy on off-label interest and coverage isn't known. Everything else — jobs/education/reviews disqualifiers, the account's real priority order, any other nuance — goes to the model with no account-specific knowledge, same as the Generic fallback. <b>Paste the skill's actual content and this will be replaced with a real port</b>, the same way Riccobene and OIA were done.",
+  brandRe: /(beta\s*bionics|\bilet\b|bionic\s*pancreas)/i,
+  competitors: ["omnipod","insulet","tandem diabetes","tandem t:slim","t:slim x2","control-iq","medtronic minimed","minimed 780g","twiist"],
+  type2Re: /\btype\s*(2|ii|two)\s*diabetes\b/i,
+  medicareRe: /\bmedicare\b/i, medicaidRe: /\bmedicaid\b/i,
+  outOfCountry: ["uk","united kingdom","canada","australia","ireland","germany","france","india","mexico","new zealand"],
+  coreSignal: ["insulin pump","automated insulin delivery","aid system","artificial pancreas","closed loop insulin","closed-loop system","bionic pancreas","ilet","insulin delivery system","tubeless insulin pump","no carb counting","meal announcement free","type 1 diabetes","t1d management","diabetes management system"],
+  llmCategories: "Everything not already resolved by the brand/competitor/type-2/insurance/geography checks above, including the account's real priority order, jobs/education/reviews/DIY disqualifiers, and any other nuance — since the actual sqr-analysis-beta-bionics skill content isn't available this session. Classify Relevant only with clear intent around this specific product category (automated insulin delivery / insulin pump for type 1 diabetes); Competitor for any other named insulin pump or CGM company not already listed; otherwise Not Relevant, or Client Review for genuinely ambiguous cases.",
+
+  classifyDeterministic(term){
+    const t = term.trim(); if (!t) return null;
+    const tl = t.toLowerCase();
+    if (this.brandRe.test(t)) return { status: "Relevant", subtype: "Brand" };
+    if (this.competitors.some(c => tl.includes(c))) return { status: "Competitor", subtype: "Named insulin delivery competitor", negMatchType: "Exact", negLevel: "Account" };
+    if (this.type2Re.test(t)) return { status: "Client Review", subtype: "Off-Label Interest (iLet is Type 1 only) — confirm handling with client" };
+    if (this.outOfCountry.some(c => tl.includes(c))) return { status: "Not Relevant", subtype: "Out-of-Area (US-only product)", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.medicareRe.test(t) || this.medicaidRe.test(t)) return { status: "Client Review", subtype: "Insurance Coverage Unconfirmed" };
+    if (this.coreSignal.some(k => tl.includes(k))) return { status: "Relevant", subtype: "Core product intent" };
+    return null;
+  },
+};
+
+// =====================================================================
 // Generic fallback (no dedicated ruleset yet)
 // =====================================================================
 const GENERIC = {
@@ -558,7 +593,7 @@ const GENERIC = {
   classifyDeterministic(){ return null; },
 };
 
-const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gentledental_42north: GENTLEDENTAL_42NORTH, mchale: MCHALE, generic: GENERIC };
+const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gentledental_42north: GENTLEDENTAL_42NORTH, mchale: MCHALE, beta_bionics: BETA_BIONICS, generic: GENERIC };
 
 // =====================================================================
 // LLM-assisted stage for rows the deterministic pass couldn't resolve
