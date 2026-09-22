@@ -286,6 +286,10 @@ function num(v){
   const n = parseFloat(String(v).replace(/[,%$]/g, ""));
   return isNaN(n) ? 0 : n;
 }
+// Conversions are kept as exact decimals for scoring/sorting (impact score,
+// tier eligibility), but summing many CSV rows produces floating-point
+// noise (171.44999999999999) — round only where the number is DISPLAYED.
+function fmtConv(v){ return Math.round(Number(v) || 0); }
 
 // =====================================================================
 // Shared helpers
@@ -674,18 +678,18 @@ dlBtn.addEventListener("click", async () => {
   const addSheet = (name, aoa) => XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(aoa), name);
 
   addSheet("SQR Analysis", [["Search Term","Campaign","Ad Group","Clicks","Impr.","Cost","Conversions","Classification","Subtype"],
-    ...r.rows.map(x => [x.term, x.campaign, x.adGroup, x.clicks, x.impressions, x.cost, x.conversions, x._det.status, x._det.subtype || ""])]);
+    ...r.rows.map(x => [x.term, x.campaign, x.adGroup, x.clicks, x.impressions, x.cost, fmtConv(x.conversions), x._det.status, x._det.subtype || ""])]);
   addSheet("Summary", [["Metric","Value"],
-    ["Total rows", r.summary.totalRows], ["Total spend", r.summary.totalSpend.toFixed(2)], ["Total conversions", r.summary.totalConv],
+    ["Total rows", r.summary.totalRows], ["Total spend", r.summary.totalSpend.toFixed(2)], ["Total conversions", fmtConv(r.summary.totalConv)],
     ["Relevant %", r.summary.relevantPct], ["Client Review %", r.summary.reviewPct],
     ...Object.entries(r.summary.byStatus).map(([k,v]) => [k, v])]);
   addSheet("Negatives to Add (Priority)", [["Negative Text","Match Type","Level","Reason","Impact Score","Cost","Conversions"],
-    ...r.priorityNegatives.map(n => [n.text, n.matchType, n.level, n.reason, n.impact.toFixed(2), n.cost.toFixed(2), n.conversions])]);
+    ...r.priorityNegatives.map(n => [n.text, n.matchType, n.level, n.reason, n.impact.toFixed(2), n.cost.toFixed(2), fmtConv(n.conversions)])]);
   addSheet("New Keywords to Add (Priority)", [["Term","Asset Type","Suggested Match Type","Add To Level","Where To Add","Tier","Conversions","CTR","Clicks","Cost"],
-    ...r.priorityKeywords.map(k => [k.term, k.assetType, k.matchType, k.addLevel, k.whereToAdd, k.tier, k.conversions, (k.ctr*100).toFixed(2)+"%", k.clicks, k.cost.toFixed(2)])]);
+    ...r.priorityKeywords.map(k => [k.term, k.assetType, k.matchType, k.addLevel, k.whereToAdd, k.tier, fmtConv(k.conversions), (k.ctr*100).toFixed(2)+"%", k.clicks, k.cost.toFixed(2)])]);
   addSheet("Client Review Required", [["Issue Type","Count","Example Terms"], ...r.clientReview.map(c => [c.subtype, c.count, c.examples.join("; ")])]);
   addSheet("All Negatives (Reference)", [["Negative Text","Match Type","Level","Reason","Impact Score"], ...r.allNegatives.map(n => [n.text, n.matchType, n.level, n.reason, n.impact.toFixed(2)])]);
-  addSheet("All Keywords (Reference)", [["Term","Asset Type","Match Type","Tier","Conversions","CTR","Clicks"], ...r.allKeywords.map(k => [k.term, k.assetType, k.matchType, k.tier, k.conversions, (k.ctr*100).toFixed(2)+"%", k.clicks])]);
+  addSheet("All Keywords (Reference)", [["Term","Asset Type","Match Type","Tier","Conversions","CTR","Clicks"], ...r.allKeywords.map(k => [k.term, k.assetType, k.matchType, k.tier, fmtConv(k.conversions), (k.ctr*100).toFixed(2)+"%", k.clicks])]);
 
   const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   const blob = new Blob([wbout], { type: "application/octet-stream" });
@@ -713,7 +717,7 @@ function renderResults(r){
   html.push('<div class="panel">');
   html.push('<div class="kpis">',
     kpi(s.totalRows, "rows classified"), kpi("$" + s.totalSpend.toFixed(0), "total spend"),
-    kpi(s.totalConv, "conversions"), kpi(s.relevantPct + "%", "relevant"),
+    kpi(fmtConv(s.totalConv), "conversions"), kpi(s.relevantPct + "%", "relevant"),
     kpi(r.priorityNegatives.length, "priority negatives"), kpi(r.priorityKeywords.length, "priority keywords"),
     '</div>');
   html.push('<div class="tabs">',
@@ -740,7 +744,7 @@ function kpi(v, l){ return '<div class="kpi"><div class="v num">' + v + '</div><
 function tab(k, label, n){ return '<button class="tab" data-k="' + k + '">' + label + ' <span class="n">' + n + '</span></button>'; }
 
 function paneNegs(r){
-  const rowsHtml = r.priorityNegatives.map(n => '<tr><td class="term">' + esc(n.text) + '</td><td>' + n.matchType + '</td><td>' + n.level + '</td><td>' + esc(n.reason||"") + '</td><td class="num">$' + n.impact.toFixed(0) + '</td><td class="num">' + n.conversions + '</td></tr>').join("");
+  const rowsHtml = r.priorityNegatives.map(n => '<tr><td class="term">' + esc(n.text) + '</td><td>' + n.matchType + '</td><td>' + n.level + '</td><td>' + esc(n.reason||"") + '</td><td class="num">$' + n.impact.toFixed(0) + '</td><td class="num">' + fmtConv(n.conversions) + '</td></tr>').join("");
   const refHtml = r.allNegatives.slice(30).map(n => '<tr><td class="term">' + esc(n.text) + '</td><td>' + n.matchType + '</td><td>' + n.level + '</td><td class="num">$' + n.impact.toFixed(0) + '</td></tr>').join("");
   return '<div class="pane" id="pane-negs" hidden>' +
     (r.priorityNegatives.length ? tblWrap(["Negative","Match","Level","Reason","Impact","Conv"], rowsHtml) : empty()) +
@@ -748,8 +752,8 @@ function paneNegs(r){
     '</div>';
 }
 function paneKws(r){
-  const rowsHtml = r.priorityKeywords.map(k => '<tr><td class="term">' + esc(k.term) + '</td><td>' + k.assetType + '</td><td>' + k.matchType + '</td><td>' + esc(k.whereToAdd) + '</td><td class="num">' + k.conversions + '</td><td class="num">' + (k.ctr*100).toFixed(1) + '%</td><td>' + (k.tier===1?"Tier 1":"Tier 2") + '</td></tr>').join("");
-  const refHtml = r.allKeywords.slice(30).map(k => '<tr><td class="term">' + esc(k.term) + '</td><td>' + k.assetType + '</td><td class="num">' + k.conversions + '</td></tr>').join("");
+  const rowsHtml = r.priorityKeywords.map(k => '<tr><td class="term">' + esc(k.term) + '</td><td>' + k.assetType + '</td><td>' + k.matchType + '</td><td>' + esc(k.whereToAdd) + '</td><td class="num">' + fmtConv(k.conversions) + '</td><td class="num">' + (k.ctr*100).toFixed(1) + '%</td><td>' + (k.tier===1?"Tier 1":"Tier 2") + '</td></tr>').join("");
+  const refHtml = r.allKeywords.slice(30).map(k => '<tr><td class="term">' + esc(k.term) + '</td><td>' + k.assetType + '</td><td class="num">' + fmtConv(k.conversions) + '</td></tr>').join("");
   return '<div class="pane" id="pane-kws" hidden>' +
     (r.priorityKeywords.length ? tblWrap(["Term","Type","Match","Where to add","Conv","CTR","Tier"], rowsHtml) : empty()) +
     (r.allKeywords.length > 30 ? '<details class="ref"><summary>All eligible keywords (' + r.allKeywords.length + ')</summary>' + tblWrap(["Term","Type","Conv"], refHtml) + '</details>' : "") +
@@ -760,7 +764,7 @@ function paneReview(r){
   return '<div class="pane" id="pane-review" hidden>' + (r.clientReview.length ? tblWrap(["Issue","Count","Examples"], rowsHtml) : empty()) + '</div>';
 }
 function paneAll(r){
-  const rowsHtml = r.rows.slice(0, 500).map(x => '<tr class="' + rowClass(x._det.status) + '"><td class="term">' + esc(x.term) + '</td><td>' + esc(x.campaign) + '</td><td class="num">$' + x.cost.toFixed(2) + '</td><td class="num">' + x.conversions + '</td><td><span class="pill ' + pillClass(x._det.status) + '">' + x._det.status + '</span></td><td>' + esc(x._det.subtype||"") + '</td></tr>').join("");
+  const rowsHtml = r.rows.slice(0, 500).map(x => '<tr class="' + rowClass(x._det.status) + '"><td class="term">' + esc(x.term) + '</td><td>' + esc(x.campaign) + '</td><td class="num">$' + x.cost.toFixed(2) + '</td><td class="num">' + fmtConv(x.conversions) + '</td><td><span class="pill ' + pillClass(x._det.status) + '">' + x._det.status + '</span></td><td>' + esc(x._det.subtype||"") + '</td></tr>').join("");
   const note = r.rows.length > 500 ? '<p class="sub" style="margin-top:8px">Showing first 500 of ' + r.rows.length + ' rows on-screen — the full set is in the downloaded workbook.</p>' : "";
   return '<div class="pane" id="pane-all" hidden>' + tblWrap(["Term","Campaign","Cost","Conv","Status","Subtype"], rowsHtml) + note + '</div>';
 }
