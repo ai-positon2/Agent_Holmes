@@ -513,6 +513,40 @@ const GENTLEDENTAL_42NORTH = {
 };
 
 // =====================================================================
+// MCHALE LANDSCAPE DESIGN ruleset — standard/universal SQR structure
+// (same shape as OIA), built from the client's zip-targeting file + the
+// account's three landing-page URLs rather than a written prompt.
+// =====================================================================
+const MCHALE = {
+  id: "mchale", label: "McHale Landscape Design",
+  note: "Universal SQR structure (same shape as OIA) for a DC-metro landscaping company. Service area confirmed from the client's own zip-targeting file: 120 zip codes split across two campaign ‘Sets’ (A/B), all within DC/Maryland/Northern Virginia — but the two sets have essentially the SAME state mix (no geographic boundary between them), so there's no real per-campaign territory to build a location-mismatch map from; only a broad DMV out-of-area check runs here. <b>No competitor list was given for this account</b> — unlike the other rulesets, competitor detection runs entirely through the model, using general knowledge of landscaping-industry brand names. Bare ‘McHale’ requires landscaping/garden context before counting as brand, since McHale Manufacturing (agricultural equipment, unrelated) is a real different company that shares the name.",
+  brandCoreRe: /mc\s*hale/i,
+  landscapeContextRe: /\b(landscap\w*|garden\w*|lawn|yard|hardscape\w*|patio|nursery)\b/i,
+  jobsRe: /\b(hiring|careers?|jobs?|apply|salary)\b/i,
+  eduRe: /\b(school|certification|course|how to become a|training program|degree)\b/i,
+  reviewsRe: /\b(reviews?|complaints?|ratings?|scam|ripoff|rip-off|bad experience)\b/i,
+  diyRe: /\bdiy\b|\bhow to (build|install|plant|make)\b/i,
+  outOfArea: ["los angeles ca","new york ny","chicago il","houston tx","phoenix az","san antonio tx","san diego ca","dallas tx","san jose ca","austin tx","miami fl","atlanta ga","boston ma","seattle wa","denver co","detroit mi","philadelphia pa","charlotte nc","san francisco ca"],
+  coreSignal: ["landscap","hardscape","hardscaping","lawn care","lawn maintenance","lawn service","garden design","gardening","fine gardening","design build","design and build","patio design","paver patio","retaining wall","outdoor living","outdoor kitchen","fire pit","pergola","walkway","planting design","tree service","irrigation","drainage system","mulch","sod installation","yard design","backyard design","landscape contractor","landscape architect","landscape maintenance","landscape lighting","nursery"],
+  llmCategories: "Standard SQR disqualifiers with no given word list for this account — Jobs/Recruitment and Education/Training beyond the basic patterns already checked, Informational/Research, Non-Profit, and generic Price-Seeking — plus any competing landscape/hardscape/garden-design company name (classify Competitor; no competitor list was provided, so rely on general knowledge of landscaping-industry brands). If none of those apply and the term still shows real landscaping/gardening service intent, classify Relevant.",
+
+  classifyDeterministic(term){
+    const t = term.trim(); if (!t) return null;
+    const tl = t.toLowerCase();
+    if (this.brandCoreRe.test(t)) {
+      return this.landscapeContextRe.test(t) ? { status: "Relevant", subtype: "Brand" } : null; // bare "McHale" is ambiguous — let the model decide
+    }
+    if (this.jobsRe.test(t)) return { status: "Not Relevant", subtype: "Jobs/Recruitment", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.eduRe.test(t)) return { status: "Not Relevant", subtype: "Education/Training", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.reviewsRe.test(t)) return { status: "Not Relevant", subtype: "Reviews/Reputation", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.diyRe.test(t)) return { status: "Not Relevant", subtype: "DIY/Home Project" };
+    if (this.outOfArea.some(c => tl.includes(c))) return { status: "Not Relevant", subtype: "Out-of-Area Location", negMatchType: "Phrase", negLevel: "Campaign" };
+    if (this.coreSignal.some(k => tl.includes(k))) return { status: "Relevant", subtype: "Core landscaping intent" };
+    return null;
+  },
+};
+
+// =====================================================================
 // Generic fallback (no dedicated ruleset yet)
 // =====================================================================
 const GENERIC = {
@@ -522,7 +556,7 @@ const GENERIC = {
   classifyDeterministic(){ return null; },
 };
 
-const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gentledental_42north: GENTLEDENTAL_42NORTH, generic: GENERIC };
+const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gentledental_42north: GENTLEDENTAL_42NORTH, mchale: MCHALE, generic: GENERIC };
 
 // =====================================================================
 // LLM-assisted stage for rows the deterministic pass couldn't resolve
