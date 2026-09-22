@@ -449,16 +449,80 @@ const OIA = {
 };
 
 // =====================================================================
+// EVENTGROOVE ruleset — ported from the client-supplied classifier prompt
+// =====================================================================
+const EVENTGROOVE = {
+  id: "eventgroove", label: "Eventgroove",
+  note: "Ported from the client-supplied Eventgroove classifier prompt. <b>One contradiction flagged in the source</b> — worth confirming with the client: ‘tour credentials’ is listed both as an explicit Relevant example (product list) and as a Not-Relevant ‘excluded pattern’ example in the prompt's own top definition. Resolved here as <b>Relevant</b>, matching the more specific numbered list.",
+  brandRe: /(event\s*groove|eventgrooves?|event\s*grove|groove\s*events?)/i,
+  productPhrases: ["cheap raffle tickets","credential printing","backstage pass printing","tradeshow lanyards","concert laminates","vip lanyards","plastic event badges","chinese auction tickets","lanyard printing","tour credentials","vip cards","arm bands for events","band laminates","laminate passes","custom lanyards","tour laminate printing","printing credentials","event lanyards","vendor badges","ticket printers","name tag printing","pvc badges","festival ticketing"],
+  competitors: ["gearstar","uline","uprinting.com","uprinting","amazon.com","ticketprint.com","vistaprint.com","vistaprint","eventbrite.com","eventbrite"],
+  notRelevantExact: ["silicone"],
+  reviewsRe: /\b(reviews?|complaints?|ratings?|scam|ripoff|rip-off|bad experience)\b/i,
+  jobsRe: /\b(careers?|how to design a? ?ticket)\b/i,
+  freeRe: /\b(free printing|free event tickets?|free raffle tickets?|buy event tickets?|giveaway|free)\b/i,
+  irrelevantRe: /\b(fundraising|saas)\b/i,
+  nearMeRe: /\bnear me\b/i,
+  coreSignal: ["ticket","raffle","banner","poster","flyer","wristband","certificate","badge","lanyard","credential","laminate","yard sign","directional sign"],
+  llmCategories: "A standalone 'custom' or 'printing' query with no other Eventgroove product word (tickets/badges/banners/wristbands/etc.) — Relevant only if the surrounding context clearly implies an event product, otherwise Not Relevant. Also: any other named printing/ticketing competitor not already on the given list, classified Competitor.",
+
+  classifyDeterministic(term){
+    const t = term.trim(); if (!t) return null;
+    const tl = t.toLowerCase();
+    if (this.brandRe.test(t)) return { status: "Relevant", subtype: "Brand" };
+    if (this.competitors.some(c => tl.includes(c))) return { status: "Competitor", subtype: "Named competitor", negMatchType: "Exact", negLevel: "Account" };
+    if (this.notRelevantExact.some(c => tl.includes(c))) return { status: "Not Relevant", subtype: "Excluded term" };
+    if (this.reviewsRe.test(t)) return { status: "Not Relevant", subtype: "Reviews/Reputation", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.jobsRe.test(t)) return { status: "Not Relevant", subtype: "Jobs/Training", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.freeRe.test(t)) return { status: "Not Relevant", subtype: "Promotions/Freebies", negMatchType: "Phrase", negLevel: "Account" };
+    if (this.irrelevantRe.test(t)) return { status: "Not Relevant", subtype: "Irrelevant Service" };
+    if (this.productPhrases.some(p => tl.includes(p))) return { status: "Relevant", subtype: "Named product/service" };
+    if (this.coreSignal.some(k => tl.includes(k))) return { status: "Relevant", subtype: "Core product intent" };
+    if (this.nearMeRe.test(t)) return { status: "Not Relevant", subtype: "Location-based (near me), no product context" };
+    return null;
+  },
+};
+
+// =====================================================================
+// 42 NORTH / GENTLE DENTAL ruleset — ported from the client-supplied prompt
+// =====================================================================
+const GENTLEDENTAL_42NORTH = {
+  id: "gentledental_42north", label: "42 North (Gentle Dental)",
+  note: "Ported from the client-supplied 42 North / Gentle Dental classifier prompt. <b>Two contradictions flagged in the source</b> — worth confirming with the client: (1) ‘first dental’ appears both as a generic-Relevant example and, separately, as an explicit Not-Relevant trigger — resolved here as <b>Not Relevant</b> (the more specific, later rule). (2) ‘Montshire Pediatric Dentistry Keene’ and ‘perfect dental’ appear both as generic-Relevant examples and as explicit Competitor examples — resolved as <b>Competitor</b>, since they read as named practices. ‘blanqueamiento dental’ (Spanish for teeth whitening) sits in that same Competitor list despite being a generic service term, not a brand — resolved as <b>Relevant</b>. This account also treats insurance/cost mentions as a flat Relevant, not Client Review, per its own prompt.",
+  brandRe: /(gentle\s*dental|dental\s*gentle)/i,
+  competitors: ["aspen dental","pacific dental","montshire pediatric dentistry keene","perfect dental"],
+  firstDentalRe: /\bfirst dental\b/i,
+  insuranceRe: /\b(medicaid|delta dental|aetna|cigna|altus|dental providers?)\b/i,
+  costRe: /\b(cheap|low[\s-]?cost|cost|price|fees?)\b/i,
+  disqualifyRe: /\b(free|hiring|careers?|jobs?|dental school|hygienist program|dental supplies|dental tools|toothbrush|toothpaste)\b/i,
+  coreSignal: ["dentist","dental","tooth","teeth","cleaning","implant","invisalign","braces","whitening","veneer","extraction","crown","denture","oral surgery","periodont","pediatric dent","emergency dent","urgent care dent","root canal","orthodont"],
+  llmCategories: "Any other named dental practice not already on the given competitor list (classify Competitor), and anything else with no clear dental service, brand, insurance, or cost signal (classify Not Relevant).",
+
+  classifyDeterministic(term){
+    const t = term.trim(); if (!t) return null;
+    const tl = t.toLowerCase();
+    if (this.brandRe.test(t)) return { status: "Relevant", subtype: "Brand" };
+    if (this.firstDentalRe.test(t)) return { status: "Not Relevant", subtype: "Excluded term (first dental)" };
+    if (this.competitors.some(c => tl.includes(c))) return { status: "Competitor", subtype: "Named competitor practice", negMatchType: "Exact", negLevel: "Account" };
+    if (this.disqualifyRe.test(t)) return { status: "Not Relevant", subtype: "Free/Jobs/Education/Products" };
+    if (this.insuranceRe.test(t)) return { status: "Relevant", subtype: "Insurance/provider" };
+    if (this.costRe.test(t)) return { status: "Relevant", subtype: "Cost/price intent" };
+    if (this.coreSignal.some(k => tl.includes(k))) return { status: "Relevant", subtype: "Core dental intent" };
+    return null;
+  },
+};
+
+// =====================================================================
 // Generic fallback (no dedicated ruleset yet)
 // =====================================================================
 const GENERIC = {
   id: "generic", label: "Other / not yet mapped",
-  note: "No dedicated ruleset for this account yet — every row is classified by the model with a plain SQR rubric (Relevant / Competitor / Not Relevant / Client Review), no client-specific brand, competitor, or territory knowledge. Add a real ruleset for this account the same way Riccobene and OIA were done, once its own SQR conventions are known.",
+  note: "No dedicated ruleset for this account yet — every row is classified by the model with a plain SQR rubric (Relevant / Competitor / Not Relevant / Client Review), no client-specific brand, competitor, or territory knowledge. Add a real ruleset for this account the same way the others were done, once its own SQR conventions are known.",
   llmCategories: "General SQR triage with no account-specific knowledge: Relevant (clear intent to buy/book this kind of product or service), Competitor (names a different, competing brand), Not Relevant (jobs, education, informational, DIY, out-of-area, or no clear intent), Client Review (ambiguous insurance/coverage or anything needing a human call).",
   classifyDeterministic(){ return null; },
 };
 
-const RULESETS = { riccobene: RICCOBENE, oia: OIA, generic: GENERIC };
+const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gentledental_42north: GENTLEDENTAL_42NORTH, generic: GENERIC };
 
 // =====================================================================
 // LLM-assisted stage for rows the deterministic pass couldn't resolve
