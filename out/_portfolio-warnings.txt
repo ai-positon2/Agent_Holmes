@@ -1,5 +1,5 @@
 'Great Lakes' spent $6,587 MTD but has no Google budget row in the Budget Tracker.
-'Soteri Skin' spent $2,732 MTD but has no Google budget row in the Budget Tracker.
-'Tealium - ENG - ANZ/ASIA' spent $7,330 MTD but has no Google budget row in the Budget Tracker.
-'Tealium - ENG - EMEA' spent $29,574 MTD but has no Google budget row in the Budget Tracker.
-'Tealium - ENG - NAM' spent $47,373 MTD but has no Google budget row in the Budget Tracker.
+'Soteri Skin' spent $6,476 MTD but has no Google budget row in the Budget Tracker.
+'Tealium - ENG - ANZ/ASIA' spent $10,744 MTD but has no Google budget row in the Budget Tracker.
+'Tealium - ENG - EMEA' spent $44,102 MTD but has no Google budget row in the Budget Tracker.
+'Tealium - ENG - NAM' spent $69,033 MTD but has no Google budget row in the Budget Tracker.

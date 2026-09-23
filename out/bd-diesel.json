@@ -1,37 +1,37 @@
 {
   "client": "BD Diesel",
-  "as_of": "2026-09-08",
-  "data_through": "2026-09-08",
-  "ideal_pacing": 0.2333,
-  "allocated": 2400.0,
-  "spend": 16726.54,
-  "projected": 64815.34,
-  "conversions": 205.42000000000002,
+  "as_of": "2026-09-23",
+  "data_through": "2026-09-23",
+  "ideal_pacing": 0.7333,
+  "allocated": 72000.0,
+  "spend": 52277.57,
+  "projected": 71737.17,
+  "conversions": 655.22,
   "warnings": [],
   "accounts": [
     {
       "account": "1369614 B.C. LTD. (BD Engine Brake)",
-      "allocated": 2400.0,
-      "spend": 16726.54,
-      "pacing": 6.9694,
-      "ideal": 0.2333,
-      "ideal_schedule": 0.2333,
-      "dev_pp": 673.61,
+      "allocated": 72000.0,
+      "spend": 52277.57,
+      "pacing": 0.7261,
+      "ideal": 0.7333,
+      "ideal_schedule": 0.7333,
+      "dev_pp": -0.73,
       "status": "enabled",
-      "landing": "BUDGET UNCLEAR",
-      "projected": 64815.34,
-      "projected_pct": 27.0064,
-      "gap": 62415.34,
-      "conv_value": 215101.45,
-      "roas": 12.86,
-      "days_left": 23,
+      "landing": "ON TARGET",
+      "projected": 71737.17,
+      "projected_pct": 0.9963,
+      "gap": -262.83,
+      "conv_value": 770264.29,
+      "roas": 14.734,
+      "days_left": 8,
       "schedule": "Monday -Sunday",
-      "current_daily": 2090.82,
-      "required_daily": 0.0,
+      "current_daily": 2432.45,
+      "required_daily": 2465.3,
       "constrained_by": 0.0,
       "notes": [
-        "*Budget figure looks wrong.* The tracker says $2,400 for the month, but the set daily budgets total $2,400 and $16,727 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way.",
-        "Target of 15 is not a CPA \u2014 the account's blended CPA is $81. Actual ROAS is *12.86x* ($215,101 conversion value / $16,727 spend), below the 15x target. Campaigns are still ranked on relative CPA \u2014 ROAS isn't tracked per campaign here, only at the account level."
+        "Target of 15 is not a CPA \u2014 the account's blended CPA is $80. Actual ROAS is *14.73x* ($770,264 conversion value / $52,278 spend), below the 15x target. Campaigns are still ranked on relative CPA \u2014 ROAS isn't tracked per campaign here, only at the account level.",
+        "Not spending at all: P2_LaborDaySale_Shopping"
       ],
       "campaigns": [
         {
@@ -39,19 +39,19 @@
           "location": "1369614 B.C. LTD. (BD Engine Brake)",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 7853.09,
-          "conversions": 82.38,
-          "cpa": 95.33,
+          "spend": 24071.22,
+          "conversions": 254.93000000000004,
+          "cpa": 94.42,
           "vs_target": "at target",
-          "daily_budget": 1050.0,
+          "daily_budget": 1150.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.935,
-          "search_impr_share": null,
-          "absorption": 0.687,
-          "score": 0.698,
+          "utilisation": 0.951,
+          "search_impr_share": 0.195,
+          "absorption": 0.825,
+          "score": 0.687,
           "active": true,
           "flags": [
-            "maxing its $1,050/day budget (93% used)"
+            "maxing its $1,150/day budget (95% used)"
           ]
         },
         {
@@ -59,77 +59,57 @@
           "location": "1369614 B.C. LTD. (BD Engine Brake)",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 3718.31,
-          "conversions": 54.78,
-          "cpa": 67.88,
+          "spend": 12669.02,
+          "conversions": 210.39999999999998,
+          "cpa": 60.21,
           "vs_target": "at target",
           "daily_budget": 600.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.775,
-          "search_impr_share": 0.814,
-          "absorption": 0.539,
-          "score": 0.511,
+          "utilisation": 0.96,
+          "search_impr_share": 0.808,
+          "absorption": 0.678,
+          "score": 0.543,
           "active": true,
-          "flags": []
+          "flags": [
+            "maxing its $600/day budget (96% used)"
+          ]
         },
         {
           "campaign": "P2_US&CA_Shopping",
           "location": "1369614 B.C. LTD. (BD Engine Brake)",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 1876.08,
-          "conversions": 34.79,
-          "cpa": 53.93,
+          "spend": 5915.22,
+          "conversions": 88.19999999999999,
+          "cpa": 67.07,
           "vs_target": "at target",
-          "daily_budget": 250.0,
+          "daily_budget": 300.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.938,
-          "search_impr_share": 0.123,
-          "absorption": 0.75,
-          "score": 0.581,
+          "utilisation": 0.896,
+          "search_impr_share": 0.126,
+          "absorption": 0.815,
+          "score": 0.509,
           "active": true,
-          "flags": [
-            "maxing its $250/day budget (94% used)"
-          ]
+          "flags": []
         },
         {
           "campaign": "P2_PMAX_CA_Best_Sellers_1",
           "location": "1369614 B.C. LTD. (BD Engine Brake)",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 1839.66,
-          "conversions": 19.8,
-          "cpa": 92.91,
+          "spend": 5684.92,
+          "conversions": 59.27,
+          "cpa": 95.92,
           "vs_target": "at target",
           "daily_budget": 250.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.92,
-          "search_impr_share": null,
-          "absorption": 0.683,
-          "score": 0.488,
+          "utilisation": 1.034,
+          "search_impr_share": 0.219,
+          "absorption": 0.871,
+          "score": 0.517,
           "active": true,
           "flags": [
-            "maxing its $250/day budget (92% used)"
-          ]
-        },
-        {
-          "campaign": "P2_LaborDaySale_Shopping",
-          "location": "1369614 B.C. LTD. (BD Engine Brake)",
-          "type": "Unknown",
-          "status": "enabled",
-          "spend": 792.13,
-          "conversions": 6.67,
-          "cpa": 118.76,
-          "vs_target": "at target",
-          "daily_budget": 100.0,
-          "recommended_daily": 0.0,
-          "utilisation": 0.99,
-          "search_impr_share": 0.1,
-          "absorption": 0.776,
-          "score": 0.505,
-          "active": true,
-          "flags": [
-            "maxing its $100/day budget (99% used)"
+            "maxing its $250/day budget (103% used)"
           ]
         },
         {
@@ -137,29 +117,41 @@
           "location": "1369614 B.C. LTD. (BD Engine Brake)",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 647.27,
-          "conversions": 7.0,
-          "cpa": 92.47,
+          "spend": 2700.87,
+          "conversions": 31.33,
+          "cpa": 86.21,
           "vs_target": "at target",
           "daily_budget": 150.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.539,
-          "search_impr_share": 0.996,
-          "absorption": 0.388,
-          "score": 0.256,
+          "utilisation": 0.818,
+          "search_impr_share": 0.994,
+          "absorption": 0.554,
+          "score": 0.276,
           "active": true,
           "flags": []
+        },
+        {
+          "campaign": "P2_LaborDaySale_Shopping",
+          "location": "1369614 B.C. LTD. (BD Engine Brake)",
+          "type": "Unknown",
+          "status": "paused",
+          "spend": 1236.32,
+          "conversions": 11.09,
+          "cpa": 111.48,
+          "vs_target": "at target",
+          "daily_budget": 100.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.124,
+          "search_impr_share": 0.1,
+          "absorption": 0.927,
+          "score": 0.505,
+          "active": false,
+          "flags": [
+            "NO SPEND \u2014 paused"
+          ]
         }
       ],
-      "moves": [
-        {
-          "location": "1369614 B.C. LTD. (BD Engine Brake)",
-          "from": "Brand",
-          "to": "Shopping",
-          "per_day": 164.02,
-          "reason": "Brand: CPL $70.66 \u2014 on target, but the weakest here. Shopping: CPL $64.36."
-        }
-      ]
+      "moves": []
     }
   ]
 }

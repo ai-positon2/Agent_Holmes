@@ -1,0 +1,121 @@
+{
+  "client": "Beta Bionics",
+  "as_of": "2026-09-23",
+  "data_through": "2026-09-23",
+  "ideal_pacing": 0.7333,
+  "allocated": 30000.0,
+  "spend": 7915.23,
+  "projected": 16961.21,
+  "conversions": 88.94,
+  "warnings": [],
+  "accounts": [
+    {
+      "account": "Beta Bionics",
+      "allocated": 30000.0,
+      "spend": 7915.23,
+      "pacing": 0.2638,
+      "ideal": 0.7333,
+      "ideal_schedule": 0.7333,
+      "dev_pp": -46.95,
+      "status": "enabled",
+      "landing": "WILL UNDERSPEND",
+      "projected": 16961.21,
+      "projected_pct": 0.5654,
+      "gap": -13038.79,
+      "conv_value": 79.95,
+      "roas": null,
+      "days_left": 8,
+      "schedule": "Monday -Sunday",
+      "current_daily": 1130.75,
+      "required_daily": 2760.6,
+      "constrained_by": 1303.19,
+      "notes": [
+        "Spending $1,131/day against $1,068/day of budget (106% used) \u2014 lands at $16,961 (57%), $13,039 short. Needs $2,761/day of actual spend across 8 active days.",
+        "Guardrails cap the single-step change at $1,457/day of budget \u2014 a further $1,303/day is needed. Split it over two steps or lift the type share cap."
+      ],
+      "campaigns": [
+        {
+          "campaign": "H+G_Beta Bionics Branded Campaign",
+          "location": "Beta Bionics",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 3720.47,
+          "conversions": 57.93,
+          "cpa": 64.22,
+          "vs_target": "at target",
+          "daily_budget": 500.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.063,
+          "search_impr_share": 0.496,
+          "absorption": 0.775,
+          "score": 0.518,
+          "active": true,
+          "flags": [
+            "maxing its $500/day budget (106% used)"
+          ]
+        },
+        {
+          "campaign": "H+G_Beta Bionics Patient Unbranded Campaign",
+          "location": "Beta Bionics",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 2447.43,
+          "conversions": 22.5,
+          "cpa": 108.77,
+          "vs_target": "at target",
+          "daily_budget": 330.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.059,
+          "search_impr_share": 0.32,
+          "absorption": 0.84,
+          "score": 0.602,
+          "active": true,
+          "flags": [
+            "maxing its $330/day budget (106% used)"
+          ]
+        },
+        {
+          "campaign": "P2_Beta-Bionics_Video_July2026",
+          "location": "Beta Bionics",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1099.97,
+          "conversions": 0.0,
+          "cpa": null,
+          "vs_target": "no conversions",
+          "daily_budget": 150.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.048,
+          "search_impr_share": 0.1,
+          "absorption": 0.771,
+          "score": 0.255,
+          "active": true,
+          "flags": [
+            "maxing its $150/day budget (105% used)"
+          ]
+        },
+        {
+          "campaign": "H+G_Beta Bionics Competitor Campaign",
+          "location": "Beta Bionics",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 647.36,
+          "conversions": 8.51,
+          "cpa": 76.07,
+          "vs_target": "at target",
+          "daily_budget": 88.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.051,
+          "search_impr_share": 0.236,
+          "absorption": 0.799,
+          "score": 0.392,
+          "active": true,
+          "flags": [
+            "maxing its $88/day budget (105% used)"
+          ]
+        }
+      ],
+      "moves": []
+    }
+  ]
+}

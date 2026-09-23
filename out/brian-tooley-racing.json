@@ -1,36 +1,36 @@
 {
   "client": "Brian Tooley Racing",
-  "as_of": "2026-09-08",
-  "data_through": "2026-09-08",
-  "ideal_pacing": 0.2333,
-  "allocated": 1250.0,
-  "spend": 9723.29,
-  "projected": 37677.75,
-  "conversions": 98.85000000000001,
+  "as_of": "2026-09-23",
+  "data_through": "2026-09-23",
+  "ideal_pacing": 0.7333,
+  "allocated": 37500.0,
+  "spend": 29210.66,
+  "projected": 39425.55,
+  "conversions": 461.34,
   "warnings": [],
   "accounts": [
     {
       "account": "Brian Tooley Racing",
-      "allocated": 1250.0,
-      "spend": 9723.29,
-      "pacing": 7.7786,
-      "ideal": 0.2333,
-      "ideal_schedule": 0.2333,
-      "dev_pp": 754.53,
+      "allocated": 37500.0,
+      "spend": 29210.66,
+      "pacing": 0.779,
+      "ideal": 0.7333,
+      "ideal_schedule": 0.7333,
+      "dev_pp": 4.56,
       "status": "enabled",
-      "landing": "BUDGET UNCLEAR",
-      "projected": 37677.75,
-      "projected_pct": 30.1422,
-      "gap": 36427.75,
-      "conv_value": 70519.56,
+      "landing": "WILL OVERSPEND",
+      "projected": 39425.55,
+      "projected_pct": 1.0513,
+      "gap": 1925.55,
+      "conv_value": 304053.92,
       "roas": null,
-      "days_left": 23,
+      "days_left": 8,
       "schedule": "Monday -Sunday",
-      "current_daily": 1215.41,
-      "required_daily": 0.0,
+      "current_daily": 1276.86,
+      "required_daily": 1036.17,
       "constrained_by": 0.0,
       "notes": [
-        "*Budget figure looks wrong.* The tracker says $1,250 for the month, but the set daily budgets total $1,250 and $9,723 has already been spent in 7 active day(s). That reads as a DAILY budget in a monthly column. Pacing is not reported for this account until it is confirmed \u2014 the campaign moves below are budget-neutral and stand either way."
+        "Spending $1,277/day (95% of $1,350/day of budget) \u2014 lands at $39,426 (105%), $1,926 over. Cut to $1,036/day of actual spend across 8 active days."
       ],
       "campaigns": [
         {
@@ -38,16 +38,16 @@
           "location": "Brian Tooley Racing",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 5471.76,
-          "conversions": 60.21,
-          "cpa": 90.88,
+          "spend": 15826.0,
+          "conversions": 319.47999999999996,
+          "cpa": 49.54,
           "vs_target": "above target",
           "daily_budget": 700.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.977,
-          "search_impr_share": 0.107,
-          "absorption": 0.778,
-          "score": 0.8,
+          "utilisation": 0.983,
+          "search_impr_share": 0.108,
+          "absorption": 0.818,
+          "score": 0.863,
           "active": true,
           "flags": [
             "maxing its $700/day budget (98% used)"
@@ -58,59 +58,41 @@
           "location": "Brian Tooley Racing",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 3044.5,
-          "conversions": 38.64,
-          "cpa": 78.79,
+          "spend": 9927.58,
+          "conversions": 135.69000000000003,
+          "cpa": 73.16,
           "vs_target": "above target",
-          "daily_budget": 400.0,
+          "daily_budget": 500.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.951,
-          "search_impr_share": null,
-          "absorption": 0.706,
-          "score": 0.615,
+          "utilisation": 0.863,
+          "search_impr_share": 0.1,
+          "absorption": 0.75,
+          "score": 0.338,
           "active": true,
-          "flags": [
-            "maxing its $400/day budget (95% used)"
-          ]
+          "flags": []
         },
         {
           "campaign": "P2_Camshaft_Kits",
           "location": "Brian Tooley Racing",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 1207.03,
-          "conversions": 0.0,
-          "cpa": null,
-          "vs_target": "no conversions",
+          "spend": 3457.08,
+          "conversions": 6.17,
+          "cpa": 560.3,
+          "vs_target": "above target",
           "daily_budget": 150.0,
           "recommended_daily": 0.0,
-          "utilisation": 1.006,
-          "search_impr_share": 0.279,
-          "absorption": 0.766,
-          "score": 0.263,
+          "utilisation": 1.048,
+          "search_impr_share": 0.261,
+          "absorption": 0.858,
+          "score": 0.305,
           "active": true,
           "flags": [
-            "0 conv on $1,207",
-            "maxing its $150/day budget (101% used)"
+            "maxing its $150/day budget (105% used)"
           ]
         }
       ],
-      "moves": [
-        {
-          "location": "Brian Tooley Racing",
-          "from": "Shopping",
-          "to": "PMax",
-          "per_day": 116.89,
-          "reason": "Shopping: CPL $90.88 vs $30 target. PMax: CPL $78.79."
-        },
-        {
-          "location": "Brian Tooley Racing",
-          "from": "Other",
-          "to": "PMax",
-          "per_day": 45.0,
-          "reason": "Other: $1,207 spent, 0 conversions. PMax: CPL $78.79."
-        }
-      ]
+      "moves": []
     }
   ]
 }

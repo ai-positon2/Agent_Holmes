@@ -1,56 +1,76 @@
 {
   "client": "McHale Landscaping",
-  "as_of": "2026-09-08",
-  "data_through": "2026-09-08",
-  "ideal_pacing": 0.2333,
+  "as_of": "2026-09-23",
+  "data_through": "2026-09-23",
+  "ideal_pacing": 0.7333,
   "allocated": 10000.0,
-  "spend": 1796.75,
-  "projected": 8904.65,
-  "conversions": 6.0,
+  "spend": 6380.31,
+  "projected": 9011.66,
+  "conversions": 28.96,
   "warnings": [],
   "accounts": [
     {
       "account": "McHale Landscaping",
       "allocated": 10000.0,
-      "spend": 1796.75,
-      "pacing": 0.1797,
-      "ideal": 0.2333,
-      "ideal_schedule": 0.2333,
-      "dev_pp": -5.37,
+      "spend": 6380.31,
+      "pacing": 0.638,
+      "ideal": 0.7333,
+      "ideal_schedule": 0.7333,
+      "dev_pp": -9.53,
       "status": "enabled",
       "landing": "WILL UNDERSPEND",
-      "projected": 8904.65,
-      "projected_pct": 0.8905,
-      "gap": -1095.35,
-      "conv_value": 1202.0,
+      "projected": 9011.66,
+      "projected_pct": 0.9012,
+      "gap": -988.34,
+      "conv_value": 8186.45,
       "roas": null,
-      "days_left": 23,
+      "days_left": 8,
       "schedule": "Monday -Sunday",
-      "current_daily": 309.04,
-      "required_daily": 356.66,
+      "current_daily": 328.92,
+      "required_daily": 452.46,
       "constrained_by": 0.0,
       "notes": [
-        "*Cannot reach budget at current caps.* Even at 100% utilisation the set daily budgets ($340/day) top out at $9,617 \u2014 $383 under the $10,000 allocation. Reallocation cannot fix this; the caps have to rise."
+        "*Cannot reach budget at current caps.* Even at 100% utilisation the set daily budgets ($410/day) top out at $9,660 \u2014 $340 under the $10,000 allocation. Reallocation cannot fix this; the caps have to rise."
       ],
       "campaigns": [
+        {
+          "campaign": "P2_Pmax_Landscape_Set-B",
+          "location": "McHale Landscaping",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 1024.16,
+          "conversions": 7.0,
+          "cpa": 146.31,
+          "vs_target": "at target",
+          "daily_budget": 45.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.138,
+          "search_impr_share": null,
+          "absorption": 0.725,
+          "score": 0.641,
+          "active": true,
+          "flags": [
+            "maxing its $45/day budget (114% used)"
+          ]
+        },
         {
           "campaign": "P2_Pmax_Design_Build_Set-B",
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 315.63,
+          "spend": 982.1,
           "conversions": 1.0,
-          "cpa": 315.63,
+          "cpa": 982.1,
           "vs_target": "above target",
-          "daily_budget": 50.0,
+          "daily_budget": 45.0,
           "recommended_daily": 0.0,
-          "utilisation": 1.052,
+          "utilisation": 1.149,
           "search_impr_share": null,
-          "absorption": 0.682,
-          "score": 0.402,
+          "absorption": 0.76,
+          "score": 0.3,
           "active": true,
           "flags": [
-            "maxing its $50/day budget (105% used)"
+            "maxing its $45/day budget (115% used)"
           ]
         },
         {
@@ -58,98 +78,39 @@
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 298.08,
-          "conversions": 0.0,
-          "cpa": null,
-          "vs_target": "no conversions",
+          "spend": 924.15,
+          "conversions": 5.0,
+          "cpa": 184.83,
+          "vs_target": "above target",
           "daily_budget": 40.0,
           "recommended_daily": 0.0,
-          "utilisation": 1.065,
+          "utilisation": 1.1,
           "search_impr_share": null,
-          "absorption": 0.683,
-          "score": 0.235,
+          "absorption": 0.73,
+          "score": 0.533,
           "active": true,
           "flags": [
-            "0 conv on $298",
-            "maxing its $40/day budget (106% used)"
+            "maxing its $40/day budget (110% used)"
           ]
-        },
-        {
-          "campaign": "P2_Pmax_Landscape_Set-B",
-          "location": "McHale Landscaping",
-          "type": "Unknown",
-          "status": "enabled",
-          "spend": 214.59,
-          "conversions": 2.0,
-          "cpa": 107.29,
-          "vs_target": "beating target",
-          "daily_budget": 50.0,
-          "recommended_daily": 0.0,
-          "utilisation": 0.715,
-          "search_impr_share": null,
-          "absorption": 0.457,
-          "score": 0.628,
-          "active": true,
-          "flags": []
         },
         {
           "campaign": "P2_Pmax_Landscape_Set-A",
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 213.66,
-          "conversions": 2.0,
-          "cpa": 106.83,
+          "spend": 848.21,
+          "conversions": 7.0,
+          "cpa": 121.17,
           "vs_target": "beating target",
           "daily_budget": 40.0,
           "recommended_daily": 0.0,
-          "utilisation": 1.335,
+          "utilisation": 1.247,
           "search_impr_share": null,
-          "absorption": 0.754,
-          "score": 0.722,
+          "absorption": 0.769,
+          "score": 0.692,
           "active": true,
           "flags": [
-            "maxing its $40/day budget (134% used)"
-          ]
-        },
-        {
-          "campaign": "P2_NonBrand_Set-B",
-          "location": "McHale Landscaping",
-          "type": "Unknown",
-          "status": "enabled",
-          "spend": 148.21,
-          "conversions": 0.0,
-          "cpa": null,
-          "vs_target": "no conversions",
-          "daily_budget": 20.0,
-          "recommended_daily": 0.0,
-          "utilisation": 1.059,
-          "search_impr_share": 0.207,
-          "absorption": 0.788,
-          "score": 0.268,
-          "active": true,
-          "flags": [
-            "maxing its $20/day budget (106% used)"
-          ]
-        },
-        {
-          "campaign": "P2_Demand_Gen_Set-A",
-          "location": "McHale Landscaping",
-          "type": "Unknown",
-          "status": "enabled",
-          "spend": 147.72,
-          "conversions": 0.0,
-          "cpa": null,
-          "vs_target": "no conversions",
-          "daily_budget": 20.0,
-          "recommended_daily": 0.0,
-          "utilisation": 1.055,
-          "search_impr_share": 0.1,
-          "absorption": 0.907,
-          "score": 0.305,
-          "active": true,
-          "flags": [
-            "maxing its $20/day budget (106% used)"
+            "maxing its $40/day budget (125% used)"
           ]
         },
         {
@@ -157,19 +118,60 @@
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 147.3,
+          "spend": 456.03,
           "conversions": 0.0,
           "cpa": null,
           "vs_target": "no conversions",
           "daily_budget": 20.0,
           "recommended_daily": 0.0,
-          "utilisation": 1.052,
+          "utilisation": 1.036,
           "search_impr_share": 0.1,
-          "absorption": 0.906,
+          "absorption": 0.897,
           "score": 0.305,
           "active": true,
           "flags": [
-            "maxing its $20/day budget (105% used)"
+            "0 conv on $456",
+            "maxing its $20/day budget (104% used)"
+          ]
+        },
+        {
+          "campaign": "P2_Demand_Gen_Set-A",
+          "location": "McHale Landscaping",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 456.03,
+          "conversions": 2.0,
+          "cpa": 228.01,
+          "vs_target": "above target",
+          "daily_budget": 20.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.036,
+          "search_impr_share": 0.1,
+          "absorption": 0.898,
+          "score": 0.449,
+          "active": true,
+          "flags": [
+            "maxing its $20/day budget (104% used)"
+          ]
+        },
+        {
+          "campaign": "P2_NonBrand_Set-B",
+          "location": "McHale Landscaping",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 455.75,
+          "conversions": 3.96,
+          "cpa": 115.09,
+          "vs_target": "beating target",
+          "daily_budget": 20.0,
+          "recommended_daily": 0.0,
+          "utilisation": 1.085,
+          "search_impr_share": 0.203,
+          "absorption": 0.83,
+          "score": 0.614,
+          "active": true,
+          "flags": [
+            "maxing its $20/day budget (109% used)"
           ]
         },
         {
@@ -177,19 +179,40 @@
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 103.6,
+          "spend": 409.17,
           "conversions": 0.0,
           "cpa": null,
           "vs_target": "no conversions",
           "daily_budget": 20.0,
           "recommended_daily": 0.0,
-          "utilisation": 1.036,
-          "search_impr_share": 0.105,
-          "absorption": 0.897,
-          "score": 0.302,
+          "utilisation": 1.023,
+          "search_impr_share": 0.101,
+          "absorption": 0.891,
+          "score": 0.303,
           "active": true,
           "flags": [
-            "maxing its $20/day budget (104% used)"
+            "0 conv on $409",
+            "maxing its $20/day budget (102% used)"
+          ]
+        },
+        {
+          "campaign": "P2_Brand_McH_Set-A",
+          "location": "McHale Landscaping",
+          "type": "Unknown",
+          "status": "enabled",
+          "spend": 263.92,
+          "conversions": 1.0,
+          "cpa": 263.92,
+          "vs_target": "above target",
+          "daily_budget": 60.0,
+          "recommended_daily": 0.0,
+          "utilisation": 0.275,
+          "search_impr_share": 0.98,
+          "absorption": 0.192,
+          "score": 0.187,
+          "active": true,
+          "flags": [
+            "using only 27% of its $60/day budget"
           ]
         },
         {
@@ -197,95 +220,61 @@
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 77.29,
+          "spend": 227.63,
           "conversions": 0.0,
           "cpa": null,
           "vs_target": "no conversions",
           "daily_budget": 20.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.644,
-          "search_impr_share": 0.308,
-          "absorption": 0.608,
-          "score": 0.212,
+          "utilisation": 0.669,
+          "search_impr_share": 0.218,
+          "absorption": 0.563,
+          "score": 0.205,
           "active": true,
-          "flags": []
-        },
-        {
-          "campaign": "P2_Brand_McH_Set-A",
-          "location": "McHale Landscaping",
-          "type": "Unknown",
-          "status": "enabled",
-          "spend": 62.37,
-          "conversions": 1.0,
-          "cpa": 62.37,
-          "vs_target": "beating target",
-          "daily_budget": 20.0,
-          "recommended_daily": 0.0,
-          "utilisation": 0.78,
-          "search_impr_share": 0.957,
-          "absorption": 0.439,
-          "score": 0.685,
-          "active": true,
-          "flags": []
+          "flags": [
+            "0 conv on $228"
+          ]
         },
         {
           "campaign": "P2_NonBrand Seasonal_Ad_Copy",
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 59.0,
+          "spend": 223.51,
           "conversions": 0.0,
           "cpa": null,
           "vs_target": "no conversions",
           "daily_budget": 20.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.492,
-          "search_impr_share": 0.17,
-          "absorption": 0.396,
-          "score": 0.146,
+          "utilisation": 0.588,
+          "search_impr_share": 0.164,
+          "absorption": 0.534,
+          "score": 0.197,
           "active": true,
-          "flags": [
-            "using only 49% of its $20/day budget"
-          ]
+          "flags": []
         },
         {
           "campaign": "P2_Brand_McH_Set-B",
           "location": "McHale Landscaping",
           "type": "Unknown",
           "status": "enabled",
-          "spend": 9.3,
-          "conversions": 0.0,
-          "cpa": null,
-          "vs_target": "no conversions",
-          "daily_budget": 20.0,
+          "spend": 109.65,
+          "conversions": 2.0,
+          "cpa": 54.82,
+          "vs_target": "beating target",
+          "daily_budget": 60.0,
           "recommended_daily": 0.0,
-          "utilisation": 0.116,
+          "utilisation": 0.114,
           "search_impr_share": 1.0,
-          "absorption": 0.103,
-          "score": 0.194,
+          "absorption": 0.057,
+          "score": 0.526,
           "active": true,
           "flags": [
-            "thin data",
-            "using only 12% of its $20/day budget"
+            "using only 11% of its $60/day budget"
           ]
         }
       ],
-      "moves": [
-        {
-          "location": "McHale Landscaping",
-          "from": "Demand Gen",
-          "to": "PMax",
-          "per_day": 9.72,
-          "reason": "Demand Gen: $399 spent, 0 conversions. PMax: CPL $208.39."
-        },
-        {
-          "location": "McHale Landscaping",
-          "from": "Non Brand",
-          "to": "PMax",
-          "per_day": 9.72,
-          "reason": "Non Brand: $284 spent, 0 conversions. PMax: CPL $208.39."
-        }
-      ]
+      "moves": []
     }
   ]
 }

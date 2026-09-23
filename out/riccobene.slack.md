@@ -1,64 +1,48 @@
 *Riccobene* — budget pacing, September 2026
-Day 8 · ideal pacing *23.3%* (7/30) · tolerance +2pp · data through Sep 8
-_Schedule-aware ideal for these run-days is 22.2%–23.1% — the calendar rule flatters part-week accounts._
+Day 23 · ideal pacing *73.3%* (22/30) · tolerance +2pp · data through Sep 23
+_Schedule-aware ideal for these run-days is 69.2%–72.7% — the calendar rule flatters part-week accounts._
 
-*Client total:* $3,992 of $16,500 (24.2%) · projects to $19,093 (116%) · 60 conv · CPA $67
-7 of 10 accounts off-target · 3 campaign moves
+*Client total:* $11,846 of $16,500 (71.8%) · projects to $16,937 (103%) · 221 conv · CPA $54
+5 of 10 accounts off-target · 1 campaign move · *1 cannot reach budget at current caps*
 
 *Needs action* _(largest dollar gap first)_
-:red_circle: *Winston Salem* — $928 of $3,000 (30.9%) · projects to $4,159 (139%)
-    _$190/day actual against $130/day of budget (146% used) · 17 active days left_
-    → Cut to $122/day of actual spend — otherwise $1,159 over
-    • Move *$8/day* `PMax` → `Generic`
-      _PMax: CPL $75.19 — on target, but the weakest here. Generic: CPL $31.84 vs $250 target._
-    :warning: `P2_Pmax_Winston-Salem` — spending $135/day against a $80/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
-    _Spending $190/day (146% of $130/day of budget) — lands at $4,159 (139%), $1,159 over. Cut to $122/day of actual spend across 17 active days._
+:red_circle: *Porters Neck* — $1,886 of $2,500 (75.4%) · projects to $2,654 (106%)
+    _$128/day actual against $90/day of budget (142% used) · 6 active days left_
+    → Cut to $102/day of actual spend — otherwise $154 over
+    :warning: `P2_NonBrand_PortersNeck` — spending $20/day against a $5/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
+    _Spending $128/day (142% of $90/day of budget) — lands at $2,654 (106%), $154 over. Cut to $102/day of actual spend across 6 active days._
 
-:red_circle: *Myrtle Beach (de novo)* — $321 of $1,000 (32.1%) · projects to $1,457 (146%)
-    _$114/day actual against $86/day of budget (132% used) · 10 active days left_
-    → Cut to $68/day of actual spend — otherwise $457 over
-    :warning: `P2_Generic_Myrtle` — spending $46/day against a $20/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
-    :warning: `P2_NonBrand_Myrtle` — spending $20/day against a $10/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
-    _Spending $114/day (132% of $86/day of budget) — lands at $1,457 (146%), $457 over. Cut to $68/day of actual spend across 10 active days._
+:red_circle: *Monkey Junction* — $819 of $1,100 (74.5%) · projects to $1,216 (111%)
+    _$66/day actual against $55/day of budget (120% used) · 6 active days left_
+    → Cut to $47/day of actual spend — otherwise $116 over
+    :warning: `P2_Generic_MonkeyJunction` — spending $20/day against a $10/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
+    :warning: `P2_Pmax_Emergency_Monkey_Junction` — spending $9/day against a $5/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
+    _Spending $66/day (120% of $55/day of budget) — lands at $1,216 (111%), $116 over. Cut to $47/day of actual spend across 6 active days._
 
-:red_circle: *Goldsboro* — $248 of $750 (33.1%) · projects to $1,192 (159%)
-    _$56/day actual against $65/day of budget (85% used) · 17 active days left_
-    → Cut to $30/day of actual spend — otherwise $442 over
-    :warning: `P2_Generic_Goldsboro` — spending $8/day against a $5/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
-    _Spending $56/day (85% of $65/day of budget) — lands at $1,192 (159%), $442 over. Cut to $30/day of actual spend across 17 active days._
+:red_circle: *Hampstead* — $1,441 of $1,950 (73.9%) · projects to $2,034 (104%)
+    _$99/day actual against $75/day of budget (132% used) · 6 active days left_
+    → Cut to $85/day of actual spend — otherwise $84 over
+    :warning: `P2_NonBrand_Hampstead` — spending $21/day against a $10/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
+    _Spending $99/day (132% of $75/day of budget) — lands at $2,034 (104%), $84 over. Cut to $85/day of actual spend across 6 active days._
 
-:red_circle: *Rock Hill* — $526 of $2,200 (23.9%) · projects to $2,527 (115%)
-    _$118/day actual against $115/day of budget (102% used) · 17 active days left_
-    → Cut to $98/day of actual spend — otherwise $327 over
-    _Spending $118/day (102% of $115/day of budget) — lands at $2,527 (115%), $327 over. Cut to $98/day of actual spend across 17 active days._
+:large_blue_circle: *Myrtle Beach (de novo)* — $630 of $1,000 (63.0%) · projects to $927 (93%)
+    _$74/day actual against $80/day of budget (93% used) · 4 active days left_
+    → Raise to $93/day of actual spend — otherwise $73 short
+    *Cannot reach budget at current caps.* Even at 100% utilisation the set daily budgets ($80/day) top out at $950 — $50 under the $1,000 allocation. Reallocation cannot fix this; the caps have to rise.
 
-:red_circle: *Benson* — $220 of $1,000 (22.0%) · projects to $1,182 (118%)
-    _$57/day actual against $55/day of budget (103% used) · 17 active days left_
-    → Cut to $46/day of actual spend — otherwise $182 over
-    :warning: `P2_Generic_Benson` — spending $23/day against a $5/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
-    _Spending $57/day (103% of $55/day of budget) — lands at $1,182 (118%), $182 over. Cut to $46/day of actual spend across 17 active days._
-
-:red_circle: *Harrisburg* — $348 of $1,500 (23.2%) · projects to $1,622 (108%)
-    _$75/day actual against $87/day of budget (86% used) · 17 active days left_
-    → Cut to $68/day of actual spend — otherwise $122 over
-    _Spending $75/day (86% of $87/day of budget) — lands at $1,622 (108%), $122 over. Cut to $68/day of actual spend across 17 active days._
-
-:large_blue_circle: *Monkey Junction* — $167 of $1,100 (15.2%) · projects to $1,026 (93%)
-    _$51/day actual against $85/day of budget (59% used) · 17 active days left_
-    → Raise to $55/day of actual spend — otherwise $74 short
-    • Move *$7/day* `PMax` → `Generic`
-      _PMax: $5 spent, 0 conversions. Generic: CPL $24.24 vs $250 target._
-    _Spending $51/day against $85/day of budget (59% used) — lands at $1,026 (93%), $74 short. Needs $55/day of actual spend across 17 active days._
+:red_circle: *Benson* — $721 of $1,000 (72.1%) · projects to $1,067 (107%)
+    _$58/day actual against $41/day of budget (141% used) · 6 active days left_
+    → Cut to $47/day of actual spend — otherwise $67 over
+    :warning: `P2_NonBrand_Benson` — spending $10/day against a $1/day cap — the budget was almost certainly changed mid-month; treat the cap as the current truth
+    _Spending $58/day (141% of $41/day of budget) — lands at $1,067 (107%), $67 over. Cut to $47/day of actual spend across 6 active days._
 
 *On budget, but worth a campaign shift*
-:large_green_circle: *HighPoint* — $325 of $1,500 (21.7%) · projects to $1,465 (98%)
-    _$81/day actual against $110/day of budget (74% used) · 14 active days left_
-    • Move *$11/day* `PMax` → `Generic`
-      _PMax: CPL $86.53 — on target, but the weakest here. Generic: CPL $39.69 vs $250 target._
-    :warning: `P2_NonBrand_HighPoint` — NO SPEND — enabled but zero spend — disapproved, no impressions, or bid too low?
-    _Not spending at all: P2_NonBrand_HighPoint_
+:large_green_circle: *Goldsboro* — $522 of $750 (69.6%) · projects to $764 (102%)
+    _$40/day actual against $80/day of budget (50% used) · 6 active days left_
+    • Move *$10/day* `Generic` → `PMax`
+      _Generic: $117 spent, 0 conversions. PMax: CPL $26.74 vs $250 target._
 
-*No action* — Porters Neck (101%), Hampstead (99%)
+*No action* — Winston Salem (102%), Rock Hill (101%), Harrisburg (99%), HighPoint (101%)
 
 *Data flags*
     • 'Riccobene' spent $24,463 MTD but has no Google budget row in the Budget Tracker.
