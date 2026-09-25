@@ -167,7 +167,7 @@ a.card:hover .cta .arrow{transform:translateX(3px)}
       <span class="cta">Open chat <span class="arrow">→</span></span>
     </a>
 
-    <a class="card live" href="https://claude.ai/code/artifact/b8ff31c4-f7ff-46f4-a60e-6755fc3788a7" target="_blank" rel="noopener">
+    <a class="card live" href="https://claude.ai/code/artifact/b8ff31c4-f7ff-46f4-a60e-6755fc3788a7" data-local="sqr_agent.html" target="_blank" rel="noopener">
       <div class="card-top">
         <span class="pill live"><span class="b"></span>Live</span>
         <span class="card-id">03 · sqr</span>
@@ -191,3 +191,16 @@ a.card:hover .cta .arrow{transform:translateX(3px)}
   <p class="foot">Position2 internal tools. Each card links to that tool's own live
     workspace once it ships — nothing here reads or stores client data on its own.</p>
 </main>
+
+<script>
+// Outside Claude's Artifact sandbox (e.g. this page served standalone from
+// Railway), window.claude never exists — swap each card's link from its
+// private claude.ai Artifact URL to the same tool served alongside this
+// page instead. Inside Claude, this is a no-op and the Artifact links stand.
+if (!(window.claude && window.claude.use)) {
+  document.querySelectorAll("a[data-local]").forEach(function(a){
+    a.href = a.getAttribute("data-local");
+    a.removeAttribute("target");
+  });
+}
+</script>

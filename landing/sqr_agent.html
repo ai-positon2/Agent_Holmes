@@ -599,9 +599,21 @@ const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gen
 // LLM-assisted stage for rows the deterministic pass couldn't resolve
 // =====================================================================
 let sample = null;
+// Inside Claude's Artifact sandbox, `sample` (set in boot()) talks to the
+// model directly. Served standalone (e.g. from Railway), window.claude
+// never exists, so this falls back to this deployment's own backend route
+// instead — same prompt, same expected JSON-array response shape.
+async function callSample(prompt){
+  if (sample) return sample.json(prompt, { modelTier: "quick" });
+  const res = await fetch("/api/sample", {
+    method: "POST", headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt }),
+  });
+  if (!res.ok) throw new Error("sample backend returned " + res.status);
+  return res.json();
+}
 async function classifyPending(ruleset, terms, statusCb){
   if (!terms.length) return {};
-  if (!sample) return Object.fromEntries(terms.map(t => [t, { status: "Not Relevant", subtype: "No Clear Intent (model unavailable)" }]));
   const out = {};
   const BATCH = 40;
   for (let i = 0; i < terms.length; i += BATCH){
@@ -616,7 +628,7 @@ async function classifyPending(ruleset, terms, statusCb){
       '[{"term": "...", "status": "Relevant"|"Competitor"|"Not Relevant"|"Client Review", "subtype": "short label"}]\n\n' +
       "Terms:\n" + batch.map(t => "- " + t).join("\n");
     try {
-      const res = await sample.json(prompt, { modelTier: "quick" });
+      const res = await callSample(prompt);
       const arr = Array.isArray(res) ? res : [];
       arr.forEach(r => { if (r && r.term) out[r.term] = { status: r.status || "Not Relevant", subtype: r.subtype || "" }; });
     } catch (e) { /* leave unresolved terms out; caller defaults them */ }
@@ -828,15 +840,25 @@ dlBtn.addEventListener("click", async () => {
 
   const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
   const blob = new Blob([wbout], { type: "application/octet-stream" });
-  const downloads = window.claude ? await window.claude.use("downloads").catch(() => null) : null;
   const filename = "SQR_Analysis_" + lastResult.ruleset.id + "_" + new Date().toISOString().slice(0,10) + ".xlsx";
-  if (!downloads) { setStatus("Downloads aren't available in this view."); return; }
-  try {
-    await downloads.save({ filename, data: blob });
-    setStatus("Saved " + filename);
-  } catch (e) {
-    setStatus(e && e.code === "declined" ? "Download cancelled." : "Couldn't save the file (" + (e && e.code || "unknown") + ").");
+  const downloads = window.claude ? await window.claude.use("downloads").catch(() => null) : null;
+  if (downloads) {
+    try {
+      await downloads.save({ filename, data: blob });
+      setStatus("Saved " + filename);
+    } catch (e) {
+      setStatus(e && e.code === "declined" ? "Download cancelled." : "Couldn't save the file (" + (e && e.code || "unknown") + ").");
+    }
+    return;
   }
+  // Outside Claude's sandbox (e.g. Railway), window.claude.use("downloads")
+  // never resolves — a plain Blob download link works natively here, since
+  // the sandbox workaround it replaces doesn't apply outside Claude.
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+  URL.revokeObjectURL(url);
+  setStatus("Saved " + filename);
 });
 
 function pillClass(status){

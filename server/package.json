@@ -1,0 +1,16 @@
+{
+  "name": "agent-holmes-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Standalone backend for the Agent Holmes tools deployed on Railway, replacing window.claude.use(...) capabilities that only exist inside Claude's Artifact sandbox.",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "engines": {
+    "node": ">=18"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  }
+}
