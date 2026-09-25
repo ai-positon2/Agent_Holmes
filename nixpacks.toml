@@ -1,7 +1,0 @@
-providers = ["node"]
-
-[phases.install]
-cmds = ["npm install -g serve"]
-
-[start]
-cmd = "serve -s landing -l $PORT"
