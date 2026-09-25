@@ -142,7 +142,7 @@ details.ref summary{cursor:pointer;font-family:Archivo,sans-serif;font-size:12.5
 <header class="mast">
   <div class="mast-in">
     <h1><span class="dot"></span>Search Query Analysis</h1>
-    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab">&larr; Agent Desk</a>
+    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab" data-local="agent_desk.html">&larr; Agent Desk</a>
   </div>
 </header>
 
@@ -935,6 +935,14 @@ function esc(s){ return String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt
 (async function boot(){
   if (window.claude && window.claude.use) {
     sample = await window.claude.use("sample").catch(() => null);
+  } else {
+    // Outside Claude's Artifact sandbox (e.g. this page served standalone
+    // from Railway) — swap the back link from its private claude.ai
+    // Artifact URL to the same-origin Agent Desk page instead.
+    document.querySelectorAll("a[data-local]").forEach(function(a){
+      a.href = a.getAttribute("data-local");
+      a.removeAttribute("target");
+    });
   }
 })();
 })();
