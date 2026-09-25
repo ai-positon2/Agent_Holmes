@@ -12,7 +12,15 @@ const path = require("path");
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
-app.use(express.static(path.join(__dirname, "landing")));
+// These pages were built as Claude Artifact fragments -- Claude's own
+// Artifact host wraps them in a shell that declares UTF-8 automatically.
+// Served directly, there's no such wrapper and no charset anywhere, so
+// browsers guess wrong on every em dash, arrow, and middle dot. Force it.
+app.use(express.static(path.join(__dirname, "landing"), {
+  setHeaders(res, filePath) {
+    if (filePath.endsWith(".html")) res.setHeader("Content-Type", "text/html; charset=utf-8");
+  },
+}));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
