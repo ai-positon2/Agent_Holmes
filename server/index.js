@@ -8,15 +8,24 @@
 "use strict";
 
 const express = require("express");
+const fs = require("fs");
 const path = require("path");
+const db = require("./db");
 
 const app = express();
 app.use(express.json({ limit: "2mb" }));
+// The Dockerfile flattens server/index.js and landing/ into the same
+// directory, but `node server/index.js` run straight from a checkout
+// (local dev) has landing/ as index.js's sibling one level up -- try the
+// deployed layout first, fall back to the dev one.
+const landingDir = fs.existsSync(path.join(__dirname, "landing"))
+  ? path.join(__dirname, "landing")
+  : path.join(__dirname, "..", "landing");
 // These pages were built as Claude Artifact fragments -- Claude's own
 // Artifact host wraps them in a shell that declares UTF-8 automatically.
 // Served directly, there's no such wrapper and no charset anywhere, so
 // browsers guess wrong on every em dash, arrow, and middle dot. Force it.
-app.use(express.static(path.join(__dirname, "landing"), {
+app.use(express.static(landingDir, {
   setHeaders(res, filePath) {
     if (filePath.endsWith(".html")) res.setHeader("Content-Type", "text/html; charset=utf-8");
   },
@@ -73,9 +82,69 @@ app.post("/api/sample", async (req, res) => {
   }
 });
 
+// Pacing Desk's data layer -- a REST stand-in for the Claude Artifact's
+// shared `db` capability, backed by the Postgres tables in ./db.js.
+function requireDb(_req, res, next) {
+  if (!db.pool) {
+    res.status(503).json({ error: "DATABASE_URL is not configured on this server." });
+    return;
+  }
+  next();
+}
+function onDbError(res) {
+  return (e) => res.status(500).json({ error: String((e && e.message) || e) });
+}
+
+app.get("/api/pacing/snapshots", requireDb, (req, res) => {
+  db.listSnapshots().then((rows) => res.json(rows), onDbError(res));
+});
+
+app.get("/api/pacing/snapshots/:date/meta", requireDb, (req, res) => {
+  db.getSnapshotMeta(req.params.date).then((meta) => {
+    if (!meta) { res.status(404).json({ error: "No snapshot for that date." }); return; }
+    res.json(meta);
+  }, onDbError(res));
+});
+
+app.get("/api/pacing/snapshots/:date/clients", requireDb, (req, res) => {
+  db.getSnapshotClients(req.params.date).then((rows) => res.json(rows), onDbError(res));
+});
+
+app.get("/api/pacing/meta/latest", requireDb, (req, res) => {
+  db.getLatest().then((latest) => {
+    if (!latest) { res.status(404).json({ error: "No latest snapshot recorded yet." }); return; }
+    res.json(latest);
+  }, onDbError(res));
+});
+
+app.get("/api/pacing/moves", requireDb, (req, res) => {
+  const date = req.query.date;
+  if (typeof date !== "string" || !date) { res.status(400).json({ error: "Missing 'date' query param." }); return; }
+  db.listMoves(date).then((rows) => res.json(rows), onDbError(res));
+});
+
+app.put("/api/pacing/moves/:id", requireDb, (req, res) => {
+  db.upsertMove(req.params.id, req.body || {}).then(() => res.json({ ok: true }), onDbError(res));
+});
+
+// Fail-closed: with no SEED_SECRET set, this route refuses every request
+// rather than accepting writes from anyone who finds the (public) repo.
+const SEED_SECRET = process.env.SEED_SECRET;
+app.post("/api/pacing/seed", requireDb, (req, res) => {
+  if (!SEED_SECRET || req.get("x-seed-secret") !== SEED_SECRET) {
+    res.status(403).json({ error: "Forbidden." });
+    return;
+  }
+  db.seedDay(req.body || {}).then(() => res.json({ ok: true }), onDbError(res));
+});
+
 app.get("/healthz", (_req, res) => res.send("ok"));
 
 const PORT = process.env.PORT || 8080;
-app.listen(PORT, () => {
-  console.log("Agent Holmes server listening on " + PORT + (ANTHROPIC_API_KEY ? "" : " (ANTHROPIC_API_KEY not set -- /api/sample will 503)"));
-});
+db.ensureSchema()
+  .catch((e) => console.error("Pacing Desk: schema init failed", e))
+  .then(() => {
+    app.listen(PORT, () => {
+      console.log("Agent Holmes server listening on " + PORT + (ANTHROPIC_API_KEY ? "" : " (ANTHROPIC_API_KEY not set -- /api/sample will 503)"));
+    });
+  });

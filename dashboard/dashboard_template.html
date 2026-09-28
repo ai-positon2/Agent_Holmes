@@ -54,6 +54,8 @@ h1{font-family:Archivo,sans-serif;font-weight:700;font-size:20px;letter-spacing:
   margin:0;display:flex;align-items:baseline;gap:10px}
 h1 .dot{width:7px;height:7px;border-radius:50%;background:var(--accent);
   display:inline-block;transform:translateY(-2px)}
+.mast a.back{font-family:Archivo,sans-serif;font-size:12px;font-weight:600;color:var(--muted);text-decoration:none}
+.mast a.back:hover{color:var(--accent)}
 .mast-meta{display:flex;gap:18px;flex-wrap:wrap;color:var(--muted);font-size:12.5px}
 .mast-meta b{color:var(--ink);font-weight:600}
 
@@ -248,6 +250,7 @@ tr.done .cn,tr.done .why{text-decoration:line-through;text-decoration-color:var(
 <header class="mast">
   <div class="mast-in">
     <h1><span class="dot"></span>Pacing Desk</h1>
+    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab" data-local="agent_desk.html">&larr; Agent Desk</a>
     <div class="mast-meta" id="meta"></div>
   </div>
 </header>
@@ -336,6 +339,103 @@ function computeDerived(data){
    meta/latest                      {date} — which snapshot is "today"
    moves/<date>__<loc>__<from>__<to>  {applied, appliedAt} — shared checkbox
    ============================================================ */
+// Outside Claude's Artifact sandbox (e.g. this page served standalone from
+// Railway), window.claude.use("db") never resolves. This is a REST stand-in
+// implementing only the handful of doc/collection calls this page actually
+// makes, backed by server/db.js's Postgres tables via server/index.js's
+// /api/pacing/* routes -- not a general Firestore emulation.
+function makeRestDb(){
+  function getJson(url){
+    return fetch(url).then(function(res){
+      if(res.status===404) return null;
+      if(!res.ok) throw new Error(url+" -> "+res.status);
+      return res.json();
+    });
+  }
+  return {
+    doc: function(path){
+      var m;
+      if((m = /^snapshots\/(.+)$/.exec(path))){
+        var date = m[1];
+        return { get: function(){
+          return getJson("/api/pacing/snapshots/"+encodeURIComponent(date)+"/meta").then(function(meta){
+            return meta==null ? {exists:false, data:function(){return null}} : {exists:true, data:function(){return meta}};
+          });
+        }};
+      }
+      if(path==="meta/latest"){
+        return { get: function(){
+          return getJson("/api/pacing/meta/latest").then(function(latest){
+            return latest==null ? {exists:false, data:function(){return null}} : {exists:true, data:function(){return latest}};
+          });
+        }};
+      }
+      if((m = /^moves\/(.+)$/.exec(path))){
+        var id = m[1];
+        return { set: function(data){
+          return fetch("/api/pacing/moves/"+encodeURIComponent(id), {
+            method:"PUT", headers:{"Content-Type":"application/json"}, body: JSON.stringify(data)
+          }).then(function(res){
+            if(!res.ok) throw new Error("move save failed: "+res.status);
+          });
+        }};
+      }
+      throw new Error("restDb: unsupported doc path "+path);
+    },
+    collection: function(path){
+      if(path==="snapshots"){
+        return { get: function(){
+          return getJson("/api/pacing/snapshots").then(function(rows){
+            return { docs: (rows||[]).map(function(r){ return {id:r.id, data:function(){return r}}; }) };
+          });
+        }};
+      }
+      var m = /^snapshots\/(.+)\/clients$/.exec(path);
+      if(m){
+        var date = m[1];
+        return { get: function(){
+          return getJson("/api/pacing/snapshots/"+encodeURIComponent(date)+"/clients").then(function(rows){
+            return { docs: (rows||[]).map(function(r){ return {data:function(){return r}}; }) };
+          });
+        }};
+      }
+      if(path==="moves"){
+        return { where: function(_field, _op, value){
+          return { onSnapshot: function(cb, errCb){
+            var stopped=false;
+            function poll(){
+              getJson("/api/pacing/moves?date="+encodeURIComponent(value)).then(function(rows){
+                if(stopped) return;
+                cb({ docs: (rows||[]).map(function(r){ return {id:r.id, data:function(){return r}}; }) });
+              }).catch(function(e){ if(!stopped && errCb) errCb(e); });
+            }
+            poll();
+            var timer = setInterval(poll, 15000); // no push channel over REST -- poll instead
+            return function(){ stopped=true; clearInterval(timer); };
+          }};
+        }};
+      }
+      throw new Error("restDb: unsupported collection path "+path);
+    }
+  };
+}
+
+// Same idea for CSV export: a plain Blob/<a download> link works natively
+// once there's no sandbox to work around.
+function makeNativeDownloads(){
+  return {
+    save: function(opts){
+      var blob = new Blob([opts.data], {type:"text/csv;charset=utf-8"});
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url; a.download = opts.filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      URL.revokeObjectURL(url);
+      return Promise.resolve();
+    }
+  };
+}
+
 async function loadDate(date){
   var metaSnap = await dbNS.doc("snapshots/"+date).get();
   if(!metaSnap.exists) throw new Error("No recorded snapshot for "+date);
@@ -1044,8 +1144,19 @@ $("#controls").addEventListener("click", function(e){
 buildPickers();
 setD(D, "static");
 
+if(!(window.claude && window.claude.use)){
+  document.querySelectorAll("a[data-local]").forEach(function(a){
+    a.href = a.getAttribute("data-local");
+    a.removeAttribute("target");
+  });
+}
+
 (async function(){
-  try{ dbNS = await window.claude.use("db"); }catch(e){ dbNS=null; }
+  if(window.claude && window.claude.use){
+    try{ dbNS = await window.claude.use("db"); }catch(e){ dbNS=null; }
+  } else {
+    dbNS = makeRestDb();
+  }
   if(dbNS){
     try{
       var snapsSnap = await dbNS.collection("snapshots").get();
@@ -1064,7 +1175,11 @@ setD(D, "static");
       }
     }catch(e){ console.error("Pacing Desk: db bootstrap failed", e); }
   }
-  try{ downloadsNS = await window.claude.use("downloads"); }catch(e){ downloadsNS=null; }
+  if(window.claude && window.claude.use){
+    try{ downloadsNS = await window.claude.use("downloads"); }catch(e){ downloadsNS=null; }
+  } else {
+    downloadsNS = makeNativeDownloads();
+  }
   if(downloadsNS){ buildControls(); render(); } // reveal CSV buttons once available
 })();
 
