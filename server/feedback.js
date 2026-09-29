@@ -1,15 +1,18 @@
-// Client Feedback Agent, standalone: our own Slack + Google OAuth (single
-// tenant -- one Slack grant, one Google grant, matching the original page's
-// "reads with your own access" framing) and our own Anthropic tool-use loop,
-// replacing what window.claude.use("sample"/"mcp") did inside Claude's
-// Artifact sandbox.
+// Client Feedback Agent, standalone. Two different answers to "there's no
+// Claude `mcp` capability out here":
+// - Slack: our own OAuth app (single tenant -- one grant, whoever authorizes
+//   it), same live Slack Web API calls the original page made via MCP.
+// - Google (Drive + Gmail): getting a Google Cloud OAuth client through IT
+//   was enough friction that we mirror it instead -- a scheduled task in
+//   this project's own Claude Code session (which already has Drive/Gmail
+//   connectors authorized) pulls meeting docs, the Budget Tracker, and
+//   recent email on a schedule and pushes it here via /api/feedback/seed.
+//   These tools read that mirror, not a live Google API.
+// Either way, the Anthropic tool-use loop that ties it together runs here
+// server-side, replacing window.claude.use("sample")'s client-side loop.
 "use strict";
 
-const MEETING_FOLDER_ID = "1hc1fPOHKsUNGbqBClcb4G7qwa5T38KYf";
-const BUDGET_TRACKER_ID = "1X_HjD0NUzp1br9SsLV7AICdS_SokdYuzbXc75ENVJ7A";
-
 const SLACK_SCOPES = "search:read,channels:history,groups:history,im:history,mpim:history,channels:read,groups:read";
-const GOOGLE_SCOPES = "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/drive.readonly";
 
 function truncate(s, n) {
   s = String(s == null ? "" : s);
@@ -21,8 +24,7 @@ module.exports = function mountFeedback(app, db) {
   const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
   const SLACK_CLIENT_ID = process.env.SLACK_CLIENT_ID;
   const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
-  const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
-  const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+  const SEED_SECRET = process.env.SEED_SECRET;
 
   function baseUrl(req) {
     return req.protocol + "://" + req.get("host");
@@ -67,89 +69,31 @@ module.exports = function mountFeedback(app, db) {
     }
   });
 
-  // ---- OAuth: Google (covers both Drive and Gmail) -------------------------
-
-  app.get("/auth/google/start", (req, res) => {
-    if (!GOOGLE_CLIENT_ID) { res.status(503).send("GOOGLE_CLIENT_ID is not configured on this server."); return; }
-    const redirectUri = baseUrl(req) + "/auth/google/callback";
-    const url = "https://accounts.google.com/o/oauth2/v2/auth?client_id=" + encodeURIComponent(GOOGLE_CLIENT_ID) +
-      "&redirect_uri=" + encodeURIComponent(redirectUri) +
-      "&response_type=code&access_type=offline&prompt=consent" +
-      "&scope=" + encodeURIComponent(GOOGLE_SCOPES);
-    res.redirect(url);
-  });
-
-  app.get("/auth/google/callback", async (req, res) => {
-    if (!GOOGLE_CLIENT_ID || !GOOGLE_CLIENT_SECRET) { res.status(503).send("Google OAuth is not configured on this server."); return; }
-    const code = req.query.code;
-    if (!code) { res.status(400).send("Missing 'code' from Google."); return; }
-    try {
-      const redirectUri = baseUrl(req) + "/auth/google/callback";
-      const params = new URLSearchParams({
-        client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
-        code: String(code), redirect_uri: redirectUri, grant_type: "authorization_code",
-      });
-      const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-        method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: params,
-      });
-      const data = await tokenRes.json();
-      if (!tokenRes.ok || !data.access_token) {
-        res.status(502).send("Google authorization failed: " + (data.error_description || data.error || "unknown error"));
-        return;
-      }
-      if (!data.refresh_token) {
-        // Google only issues a refresh_token on first consent. Re-consenting
-        // (prompt=consent, already set above) fixes a stale grant; this path
-        // only fires if that somehow still didn't happen.
-        res.status(502).send("Google didn't return a refresh token -- revoke this app's access at myaccount.google.com/permissions and try connecting again.");
-        return;
-      }
-      await db.setToken("google", {
-        accessToken: data.access_token,
-        refreshToken: data.refresh_token,
-        expiresAt: new Date(Date.now() + data.expires_in * 1000),
-      });
-      res.redirect("/client_feedback_agent.html?connected=google");
-    } catch (e) {
-      res.status(500).send("Google authorization failed: " + String((e && e.message) || e));
-    }
-  });
-
-  async function googleAccessToken() {
-    const row = await db.getToken("google");
-    if (!row) return null;
-    if (row.expires_at && new Date(row.expires_at).getTime() > Date.now() + 60000) {
-      return row.access_token;
-    }
-    const params = new URLSearchParams({
-      client_id: GOOGLE_CLIENT_ID, client_secret: GOOGLE_CLIENT_SECRET,
-      refresh_token: row.refresh_token, grant_type: "refresh_token",
-    });
-    const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
-      method: "POST", headers: { "content-type": "application/x-www-form-urlencoded" }, body: params,
-    });
-    const data = await tokenRes.json();
-    if (!tokenRes.ok || !data.access_token) throw new Error("Google token refresh failed: " + (data.error_description || data.error || tokenRes.status));
-    await db.setToken("google", {
-      accessToken: data.access_token,
-      refreshToken: row.refresh_token,
-      expiresAt: new Date(Date.now() + data.expires_in * 1000),
-    });
-    return data.access_token;
-  }
-
   async function slackAccessToken() {
     const row = await db.getToken("slack");
     return row ? row.access_token : null;
   }
 
-  // ---- status -------------------------------------------------------------
+  // ---- status ---------------------------------------------------------------
 
   app.get("/api/feedback/status", async (_req, res) => {
-    if (!db.pool) { res.json({ slack: "unknown", google: "unknown" }); return; }
+    if (!db.pool) { res.json({ slack: "unknown", google: null }); return; }
     try {
-      const [slack, google] = await Promise.all([db.getToken("slack"), db.getToken("google")]);
-      res.json({ slack: slack ? "connected" : "unknown", google: google ? "connected" : "unknown" });
+      const [slack, googleSync] = await Promise.all([db.getToken("slack"), db.getFeedbackSyncStatus()]);
+      res.json({ slack: slack ? "connected" : "unknown", google: googleSync });
+    } catch (e) {
+      res.status(500).json({ error: String((e && e.message) || e) });
+    }
+  });
+
+  // Fail-closed like Pacing Desk's seed route: reuses SEED_SECRET (same
+  // trust boundary, same operator) rather than adding yet another secret.
+  app.post("/api/feedback/seed", async (req, res) => {
+    if (!db.pool) { res.status(503).json({ error: "DATABASE_URL is not configured on this server." }); return; }
+    if (!SEED_SECRET || req.get("x-seed-secret") !== SEED_SECRET) { res.status(403).json({ error: "Forbidden." }); return; }
+    try {
+      await db.seedFeedback(req.body || {});
+      res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: String((e && e.message) || e) });
     }
@@ -195,36 +139,22 @@ module.exports = function mountFeedback(app, db) {
     return truncate(text || "No messages found.", 5000);
   }
 
-  async function driveExport(fileId, mimeType, accessToken) {
-    const res = await fetch(
-      "https://www.googleapis.com/drive/v3/files/" + fileId + "/export?mimeType=" + encodeURIComponent(mimeType),
-      { headers: { Authorization: "Bearer " + accessToken } }
-    );
-    if (!res.ok) throw new Error("Drive export failed: " + res.status + " " + (await res.text()).slice(0, 300));
-    return res.text();
-  }
+  // ---- Google-touching tools, against the daily-synced mirror in Postgres --
+  // (a scheduled task pushes this via /api/feedback/seed -- see the module
+  // comment at the top of this file for why there's no live Google API here)
 
   async function tGetMeetingTranscript(input) {
-    const token = await googleAccessToken();
-    if (!token) return "Google isn't connected yet.";
+    if (!db.pool) return "The meeting-notes mirror isn't configured on this server.";
     const keyword = String(input.keyword || "").trim();
-    const params = new URLSearchParams({
-      q: "'" + MEETING_FOLDER_ID + "' in parents and trashed = false",
-      orderBy: "modifiedTime desc", pageSize: "10", fields: "files(id,name,modifiedTime)",
-    });
-    const listRes = await fetch("https://www.googleapis.com/drive/v3/files?" + params, {
-      headers: { Authorization: "Bearer " + token },
-    });
-    const listing = await listRes.json();
-    const files = listing.files || [];
-    if (!files.length) return "No meeting-transcript documents found in the Meeting Notes folder yet.";
-    const candidates = files.slice(0, 2);
+    const docs = await db.listMeetingDocs();
+    if (!docs.length) return "No meeting-transcript documents have been synced yet.";
+    const candidates = docs.slice(0, 2);
 
     const tokens = keyword.toLowerCase().split(/\s+/).filter((t) => t.length >= 3);
     const allTitles = [];
     const scored = [];
     for (const f of candidates) {
-      const text = await driveExport(f.id, "text/plain", token);
+      const text = String(f.content || "");
       const marks = [];
       const re = /Meeting:\s*([^\n]+)/g;
       let m;
@@ -246,16 +176,16 @@ module.exports = function mountFeedback(app, db) {
       scored.sort((a, b) => ((b.titleScore > 0) - (a.titleScore > 0)) || (b.len - a.len));
       return truncate(scored.slice(0, 2).map((s) => s.section).join("\n\n---\n\n"), 16000);
     }
-    return "No meeting matching \"" + keyword + "\" found in the most recent transcript doc(s). " +
+    return "No meeting matching \"" + keyword + "\" found in the most recently synced transcript doc(s). " +
       "Meetings that WERE found: " + truncate(allTitles.join(" | "), 1500) +
       " -- try calling this again with a keyword closer to one of those titles.";
   }
 
   async function tGetBudgetSnapshot(input) {
-    const token = await googleAccessToken();
-    if (!token) return "Google isn't connected yet.";
+    if (!db.pool) return "The Budget Tracker mirror isn't configured on this server.";
     const client = String(input.client || "").trim();
-    let text = await driveExport(BUDGET_TRACKER_ID, "text/csv", token);
+    let text = await db.getBudgetTrackerContent();
+    if (!text) return "The Budget Tracker hasn't been synced yet.";
     if (client) {
       const lines = text.split("\n").filter((l) => l.toLowerCase().includes(client.toLowerCase()));
       if (lines.length) text = lines.join("\n");
@@ -263,67 +193,20 @@ module.exports = function mountFeedback(app, db) {
     return truncate(text, 5000);
   }
 
-  function decodeGmailPart(data) {
-    return Buffer.from(String(data || ""), "base64").toString("utf-8");
-  }
-  function findPlainTextBody(payload) {
-    if (!payload) return "";
-    if (payload.mimeType === "text/plain" && payload.body && payload.body.data) return decodeGmailPart(payload.body.data);
-    for (const part of payload.parts || []) {
-      const found = findPlainTextBody(part);
-      if (found) return found;
-    }
-    if (payload.body && payload.body.data) return decodeGmailPart(payload.body.data);
-    return "";
-  }
-  function header(headers, name) {
-    const h = (headers || []).find((x) => x.name.toLowerCase() === name.toLowerCase());
-    return h ? h.value : "";
-  }
-
   async function tSearchEmail(input) {
-    const token = await googleAccessToken();
-    if (!token) return "Google isn't connected yet.";
-    const params = new URLSearchParams({ q: String(input.query || ""), maxResults: "8" });
-    const listRes = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/messages?" + params, {
-      headers: { Authorization: "Bearer " + token },
-    });
-    const listing = await listRes.json();
-    const msgs = listing.messages || [];
-    const compact = [];
-    for (const m of msgs) {
-      const mRes = await fetch(
-        "https://gmail.googleapis.com/gmail/v1/users/me/messages/" + m.id +
-          "?format=metadata&metadataHeaders=Subject&metadataHeaders=From&metadataHeaders=Date",
-        { headers: { Authorization: "Bearer " + token } }
-      );
-      const msg = await mRes.json();
-      compact.push({
-        threadId: msg.threadId, subject: header(msg.payload && msg.payload.headers, "Subject"),
-        from: header(msg.payload && msg.payload.headers, "From"),
-        date: header(msg.payload && msg.payload.headers, "Date"),
-        snippet: (msg.snippet || "").slice(0, 200),
-      });
-    }
-    if (!compact.length) return "No emails matched that search.";
-    return truncate(JSON.stringify(compact, null, 2), 5000);
+    if (!db.pool) return "The email mirror isn't configured on this server.";
+    const rows = await db.searchEmails(String(input.query || ""));
+    if (!rows.length) return "No synced emails matched that search (search only covers the last scheduled sync, not live Gmail).";
+    return truncate(JSON.stringify(rows, null, 2), 5000);
   }
 
   async function tReadEmail(input) {
-    const token = await googleAccessToken();
-    if (!token) return "Google isn't connected yet.";
-    const threadId = String(input.thread_id || "");
-    const res = await fetch("https://gmail.googleapis.com/gmail/v1/users/me/threads/" + threadId + "?format=full", {
-      headers: { Authorization: "Bearer " + token },
-    });
-    const data = await res.json();
-    if (!data.messages) return "Couldn't read that thread: " + (data.error && data.error.message || res.status);
-    const text = data.messages.map((m) => {
-      const h = m.payload && m.payload.headers;
-      return "From: " + header(h, "From") + "\nDate: " + header(h, "Date") + "\nSubject: " + header(h, "Subject") +
-        "\n\n" + (findPlainTextBody(m.payload) || m.snippet || "");
-    }).join("\n\n====\n\n");
-    return truncate(text, 5000);
+    if (!db.pool) return "The email mirror isn't configured on this server.";
+    const row = await db.getEmailByThreadId(String(input.thread_id || ""));
+    if (!row) return "That thread ID isn't in the synced email mirror.";
+    return truncate(
+      "From: " + row.sender + "\nDate: " + row.date + "\nSubject: " + row.subject + "\n\n" + row.body, 5000
+    );
   }
 
   const TOOL_IMPL = {
@@ -343,16 +226,16 @@ module.exports = function mountFeedback(app, db) {
       description: "Read the recent message history of one Slack channel, given its channel ID (find one via search_slack first -- results show 'Channel: #name (ID: Cxxxx)').",
       input_schema: { type: "object", properties: { channel_id: { type: "string" }, limit: { type: "number", description: "Max messages, default 30" } }, required: ["channel_id"] } },
     { name: "get_meeting_transcript",
-      description: "Find and read a meeting transcript from Position2's daily meeting-notes Drive folder. Give a client name or topic keyword; returns the matching meeting section(s) (title, date, full transcript) from the most recent daily doc(s), or a list of meeting titles found if nothing matches the keyword.",
+      description: "Find and read a meeting transcript from Position2's daily meeting-notes Drive folder, as of the last scheduled sync (not live). Give a client name or topic keyword; returns the matching meeting section(s) (title, date, full transcript) from the most recently synced daily doc(s), or a list of meeting titles found if nothing matches the keyword.",
       input_schema: { type: "object", properties: { keyword: { type: "string", description: "Client name or topic to find, e.g. 'Riccobene' or 'Beta Bionics'" } }, required: ["keyword"] } },
     { name: "get_budget_snapshot",
-      description: "Read Position2's Budget Tracker sheet (allocated budgets, target CPA/ROAS, status, channel per account). Optionally filter to rows mentioning one client.",
+      description: "Read Position2's Budget Tracker sheet (allocated budgets, target CPA/ROAS, status, channel per account), as of the last scheduled sync. Optionally filter to rows mentioning one client.",
       input_schema: { type: "object", properties: { client: { type: "string", description: "Client or account name to filter to, e.g. 'Eventgroove'. Omit for the whole sheet." } } } },
     { name: "search_email",
-      description: "Search the viewer's Gmail using Gmail search syntax (from:, to:, subject:, after:, newer_than:, etc). Returns compact results: subject, sender, date, snippet, and thread ID for follow-up reads.",
+      description: "Plain keyword search over a daily-synced mirror of recent email (not live Gmail, and no Gmail search operators -- just a substring match against subject/sender/snippet/body). Returns compact results: subject, sender, date, snippet, and thread ID for follow-up reads.",
       input_schema: { type: "object", properties: { query: { type: "string" } }, required: ["query"] } },
     { name: "read_email",
-      description: "Read the full plain-text content of one email thread, given a thread ID from search_email.",
+      description: "Read the full plain-text content of one synced email thread, given a thread ID from search_email.",
       input_schema: { type: "object", properties: { thread_id: { type: "string" } }, required: ["thread_id"] } },
   ];
 
