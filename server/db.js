@@ -180,12 +180,14 @@ async function setToken(provider, { accessToken, refreshToken, expiresAt, meta }
   );
 }
 
-// Client Feedback Agent's Google mirror: a scheduled task (running with this
-// project's own already-authorized Drive/Gmail connectors, outside Railway
-// entirely) pulls a bounded slice of meeting docs / the Budget Tracker /
-// recent email and pushes it here, since Railway has no Google OAuth app of
-// its own. One transaction replaces the whole mirror each sync.
-async function seedFeedback({ meetingDocs, budgetTracker, emails }) {
+// Client Feedback Agent's Google mirror: this project's own already-
+// authorized Drive/Gmail connectors pull a bounded slice of data and push it
+// here, since Railway has no Google OAuth app of its own. Split into two
+// independent syncs, not one: meeting docs + the Budget Tracker are plain
+// business documents and sync on an unattended daily schedule; email is
+// personal/client content, so it's pushed only on a run someone actually
+// triggers, never on a silent recurring timer.
+async function seedFeedbackDocs({ meetingDocs, budgetTracker }) {
   const client = await pool.connect();
   try {
     await client.query("BEGIN");
@@ -201,6 +203,24 @@ async function seedFeedback({ meetingDocs, budgetTracker, emails }) {
        ON CONFLICT (id) DO UPDATE SET content = EXCLUDED.content`,
       [budgetTracker || ""]
     );
+    await client.query(
+      `INSERT INTO feedback_sync_meta (key, value) VALUES ('docs_sync', $1)
+       ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
+      [JSON.stringify({ at: new Date().toISOString(), meetingDocs: (meetingDocs || []).length })]
+    );
+    await client.query("COMMIT");
+  } catch (e) {
+    await client.query("ROLLBACK");
+    throw e;
+  } finally {
+    client.release();
+  }
+}
+
+async function seedFeedbackEmails({ emails }) {
+  const client = await pool.connect();
+  try {
+    await client.query("BEGIN");
     await client.query("DELETE FROM feedback_emails");
     for (const e of emails || []) {
       await client.query(
@@ -210,9 +230,9 @@ async function seedFeedback({ meetingDocs, budgetTracker, emails }) {
       );
     }
     await client.query(
-      `INSERT INTO feedback_sync_meta (key, value) VALUES ('last_sync', $1)
+      `INSERT INTO feedback_sync_meta (key, value) VALUES ('email_sync', $1)
        ON CONFLICT (key) DO UPDATE SET value = EXCLUDED.value`,
-      [JSON.stringify({ at: new Date().toISOString(), meetingDocs: (meetingDocs || []).length, emails: (emails || []).length })]
+      [JSON.stringify({ at: new Date().toISOString(), emails: (emails || []).length })]
     );
     await client.query("COMMIT");
   } catch (e) {
@@ -224,8 +244,10 @@ async function seedFeedback({ meetingDocs, budgetTracker, emails }) {
 }
 
 async function getFeedbackSyncStatus() {
-  const { rows } = await pool.query("SELECT value FROM feedback_sync_meta WHERE key = 'last_sync'");
-  return rows.length ? rows[0].value : null;
+  const { rows } = await pool.query("SELECT key, value FROM feedback_sync_meta WHERE key IN ('docs_sync', 'email_sync')");
+  const out = { docsSync: null, emailSync: null };
+  rows.forEach((r) => { if (r.key === "docs_sync") out.docsSync = r.value; else out.emailSync = r.value; });
+  return out;
 }
 
 async function listMeetingDocs() {
@@ -262,6 +284,6 @@ async function getEmailByThreadId(threadId) {
 module.exports = {
   pool, ensureSchema, listSnapshots, getSnapshotMeta, getSnapshotClients,
   getLatest, listMoves, upsertMove, seedDay, getToken, setToken,
-  seedFeedback, getFeedbackSyncStatus, listMeetingDocs, getBudgetTrackerContent,
-  searchEmails, getEmailByThreadId,
+  seedFeedbackDocs, seedFeedbackEmails, getFeedbackSyncStatus, listMeetingDocs,
+  getBudgetTrackerContent, searchEmails, getEmailByThreadId,
 };

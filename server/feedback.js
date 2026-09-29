@@ -77,10 +77,10 @@ module.exports = function mountFeedback(app, db) {
   // ---- status ---------------------------------------------------------------
 
   app.get("/api/feedback/status", async (_req, res) => {
-    if (!db.pool) { res.json({ slack: "unknown", google: null }); return; }
+    if (!db.pool) { res.json({ slack: "unknown", docsSync: null, emailSync: null }); return; }
     try {
-      const [slack, googleSync] = await Promise.all([db.getToken("slack"), db.getFeedbackSyncStatus()]);
-      res.json({ slack: slack ? "connected" : "unknown", google: googleSync });
+      const [slack, sync] = await Promise.all([db.getToken("slack"), db.getFeedbackSyncStatus()]);
+      res.json({ slack: slack ? "connected" : "unknown", docsSync: sync.docsSync, emailSync: sync.emailSync });
     } catch (e) {
       res.status(500).json({ error: String((e && e.message) || e) });
     }
@@ -88,11 +88,29 @@ module.exports = function mountFeedback(app, db) {
 
   // Fail-closed like Pacing Desk's seed route: reuses SEED_SECRET (same
   // trust boundary, same operator) rather than adding yet another secret.
-  app.post("/api/feedback/seed", async (req, res) => {
-    if (!db.pool) { res.status(503).json({ error: "DATABASE_URL is not configured on this server." }); return; }
-    if (!SEED_SECRET || req.get("x-seed-secret") !== SEED_SECRET) { res.status(403).json({ error: "Forbidden." }); return; }
+  // Split in two so a daily automated job can push docs/budget (plain
+  // business documents) without ever touching the emails route, which is
+  // only ever called from a run someone actually triggers.
+  function requireSeedSecret(req, res) {
+    if (!db.pool) { res.status(503).json({ error: "DATABASE_URL is not configured on this server." }); return false; }
+    if (!SEED_SECRET || req.get("x-seed-secret") !== SEED_SECRET) { res.status(403).json({ error: "Forbidden." }); return false; }
+    return true;
+  }
+
+  app.post("/api/feedback/seed/docs", async (req, res) => {
+    if (!requireSeedSecret(req, res)) return;
     try {
-      await db.seedFeedback(req.body || {});
+      await db.seedFeedbackDocs(req.body || {});
+      res.json({ ok: true });
+    } catch (e) {
+      res.status(500).json({ error: String((e && e.message) || e) });
+    }
+  });
+
+  app.post("/api/feedback/seed/emails", async (req, res) => {
+    if (!requireSeedSecret(req, res)) return;
+    try {
+      await db.seedFeedbackEmails(req.body || {});
       res.json({ ok: true });
     } catch (e) {
       res.status(500).json({ error: String((e && e.message) || e) });

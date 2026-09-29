@@ -53,10 +53,14 @@ notes / budget / recent email, which don't change minute to minute.
 
 **Routes** (`server/feedback.js`, mounted from `server/index.js`):
 - `GET /auth/slack/start` / `GET /auth/slack/callback` -- unchanged, real Slack OAuth
-- `GET /api/feedback/status` -> `{slack: "connected"|"unknown", google: {at, meetingDocs, emails} | null}`
-- `POST /api/feedback/seed` -> `{meetingDocs, budgetTracker, emails}` in, guarded by
-  `x-seed-secret` (reuses Pacing Desk's `SEED_SECRET`, not a new one) -- the scheduled
-  task's push target
+- `GET /api/feedback/status` -> `{slack: "connected"|"unknown", docsSync: {at, meetingDocs}|null, emailSync: {at, emails}|null}`
+- `POST /api/feedback/seed/docs` -> `{meetingDocs, budgetTracker}`, guarded by
+  `x-seed-secret` (reuses Pacing Desk's `SEED_SECRET`) -- safe for an unattended
+  daily job, plain business documents only
+- `POST /api/feedback/seed/emails` -> `{emails}`, same guard -- **never** called from
+  an unattended recurring job (Claude Code's own auto-mode classifier refused to
+  create one, flagged "PII Data Handling"); only from a run a person actually
+  triggers
 - `POST /api/feedback/chat` -> `{message, history}` in, runs the tool-use loop
   in-process, returns `{text, toolsUsed}`
 
@@ -76,12 +80,18 @@ server-side, append a `tool_result` user turn per block, and call again; stop wh
   operators, plain substring match against subject/sender/snippet/body)
 - `read_email` -> reads one `feedback_emails` row by thread_id
 
-**The sync job** (a scheduled task, not part of the Railway deploy): using this
-Claude Code project's already-authorized Drive/Gmail connectors, pull the last few
-meeting-notes docs (full text), the Budget Tracker (full text), and a bounded
-recent slice of Gmail threads (truncated per-thread), then `POST` all of it to
-`/api/feedback/seed`. Same shape as `refresh-pacing-desk`'s scheduled task, just a
-different payload and endpoint.
+**The sync jobs** (not part of the Railway deploy) -- two, deliberately not one:
+- `refresh-client-feedback-docs`: a recurring daily scheduled task, same pattern as
+  `refresh-pacing-desk` -- pulls the last few meeting-notes docs (full text) and the
+  Budget Tracker (full text) via this Claude Code project's Drive connector, writes
+  them to a temp JSON file, and pushes via `node server/seed_feedback.js <file>`.
+- Email: **no scheduled task**. `create_scheduled_task` for a job that pulls Gmail
+  content was refused by Claude Code's own classifier ("PII Data Handling") even
+  without a cron schedule attached to the attempt that mattered -- pulling personal
+  email on an unattended timer isn't something to route around. Instead: ask me (in
+  a live conversation) to run the pull + `node server/seed_feedback.js <file>` push
+  whenever fresh email data is wanted. Same script, same endpoint pattern, just
+  triggered by a person instead of a timer.
 
 **Frontend** (`landing/client_feedback_agent.html`, dual-mode like Phases 1-2): keep
 the Claude-sandbox path exactly as-is; outside it, boot calls `/api/feedback/status`,

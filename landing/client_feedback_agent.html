@@ -576,9 +576,11 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     sourcesEl.appendChild(p);
   }
 
-  // Google (Drive + Gmail) isn't a live per-viewer connection here -- it's a
-  // mirror a scheduled task pushes in periodically (see server/feedback.js).
-  // Nothing to click; just show how fresh it is.
+  // Meeting notes + Budget Tracker and email are two independent mirrors,
+  // not one -- docs sync on an unattended daily schedule, email only ever
+  // syncs from a run someone actually triggered (see server/feedback.js and
+  // plans/agent-holmes-phase3-client-feedback.md for why). Neither pill is
+  // clickable; they just show how fresh each is.
   function renderSyncPill(label, syncInfo){
     const synced = !!(syncInfo && syncInfo.at);
     const p = document.createElement("span");
@@ -593,14 +595,15 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
       a.href = a.getAttribute("data-local");
       a.removeAttribute("target");
     });
-    footNote.textContent = "Slack reads live once connected above. Google (Drive + Gmail) reads from a periodically-synced copy, not live Gmail/Drive.";
-    let status = { slack: "unknown", google: null };
+    footNote.textContent = "Slack reads live once connected above. Meeting notes, Budget Tracker, and email each read from a periodically-synced copy, not live Drive/Gmail.";
+    let status = { slack: "unknown", docsSync: null, emailSync: null };
     try {
       const res = await fetch("/api/feedback/status");
       status = await res.json();
     } catch (e) { /* keep pills at their defaults -- fetch itself failed */ }
     renderConnectPill("Slack", status.slack, "/auth/slack/start");
-    renderSyncPill("Google (Drive + Gmail)", status.google);
+    renderSyncPill("Meeting notes + Budget", status.docsSync);
+    renderSyncPill("Email", status.emailSync);
   }
 
   async function boot(){
