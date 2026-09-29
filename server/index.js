@@ -141,10 +141,10 @@ app.post("/api/pacing/seed", requireDb, (req, res) => {
 app.get("/healthz", (_req, res) => res.send("ok"));
 
 const PORT = process.env.PORT || 8080;
-db.ensureSchema()
-  .catch((e) => console.error("Pacing Desk: schema init failed", e))
-  .then(() => {
-    app.listen(PORT, () => {
-      console.log("Agent Holmes server listening on " + PORT + (ANTHROPIC_API_KEY ? "" : " (ANTHROPIC_API_KEY not set -- /api/sample will 503)"));
-    });
-  });
+app.listen(PORT, () => {
+  console.log("Agent Holmes server listening on " + PORT + (ANTHROPIC_API_KEY ? "" : " (ANTHROPIC_API_KEY not set -- /api/sample will 503)"));
+});
+// Runs in the background -- an unreachable or misconfigured DATABASE_URL
+// must not block the port from opening, since a hung connection attempt
+// has no timeout by default and would otherwise take the whole app down.
+db.ensureSchema().catch((e) => console.error("Pacing Desk: schema init failed", e));
