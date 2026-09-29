@@ -565,8 +565,8 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
   }
 
   // Standalone (e.g. Railway): there's no per-viewer Claude connector to
-  // check -- Slack is our own single-tenant OAuth grant instead, and an
-  // unconnected pill is a link straight to /auth/slack/start.
+  // check -- this is our own single-tenant OAuth grant instead. An
+  // unconnected pill is a link straight to that provider's /auth/*/start.
   function renderConnectPill(label, state, startUrl){
     const connected = state === "connected";
     const p = document.createElement(connected ? "span" : "a");
@@ -576,34 +576,19 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     sourcesEl.appendChild(p);
   }
 
-  // Meeting notes + Budget Tracker and email are two independent mirrors,
-  // not one -- docs sync on an unattended daily schedule, email only ever
-  // syncs from a run someone actually triggered (see server/feedback.js and
-  // plans/agent-holmes-phase3-client-feedback.md for why). Neither pill is
-  // clickable; they just show how fresh each is.
-  function renderSyncPill(label, syncInfo){
-    const synced = !!(syncInfo && syncInfo.at);
-    const p = document.createElement("span");
-    p.className = "src-pill"; p.dataset.state = synced ? "connected" : "unknown";
-    const suffix = synced ? " — synced " + new Date(syncInfo.at).toLocaleString() : " — not yet synced";
-    p.innerHTML = '<span class="b"></span>' + label + suffix;
-    sourcesEl.appendChild(p);
-  }
-
   async function bootStandalone(){
     document.querySelectorAll("a[data-local]").forEach(function(a){
       a.href = a.getAttribute("data-local");
       a.removeAttribute("target");
     });
-    footNote.textContent = "Slack reads live once connected above. Meeting notes, Budget Tracker, and email each read from a periodically-synced copy, not live Drive/Gmail.";
-    let status = { slack: "unknown", docsSync: null, emailSync: null };
+    footNote.textContent = "Reads live from Slack and Google (Drive + Gmail) once connected above — nothing is stored beyond the connection itself.";
+    let status = { slack: "unknown", google: "unknown" };
     try {
       const res = await fetch("/api/feedback/status");
       status = await res.json();
-    } catch (e) { /* keep pills at their defaults -- fetch itself failed */ }
+    } catch (e) { /* keep both pills "unknown" -- fetch itself failed */ }
     renderConnectPill("Slack", status.slack, "/auth/slack/start");
-    renderSyncPill("Meeting notes + Budget", status.docsSync);
-    renderSyncPill("Email", status.emailSync);
+    renderConnectPill("Google (Drive + Gmail)", status.google, "/auth/google/start");
   }
 
   async function boot(){
