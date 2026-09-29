@@ -113,6 +113,20 @@ instead of calling `sample()`. No streaming server-side (matches Phase 1's
 8. **Next**: end-to-end test -- ask a real question that needs Slack, one that
    needs Drive (meeting transcript or budget), one that needs Gmail.
 
+## Zoom (live meeting transcripts)
+
+Added on top of the base plan: `get_meeting_transcript` now checks Zoom's own cloud
+recordings first, live, before falling back to the Drive meeting-notes folder.
+Zoom uses **Server-to-Server OAuth** (an account-level credential, not a per-user
+grant) -- no consent screen, nothing in `oauth_tokens`, just `ZOOM_ACCOUNT_ID` /
+`ZOOM_CLIENT_ID` / `ZOOM_CLIENT_SECRET` / `ZOOM_USER_ID` (whose recordings to search
+-- S2S has no "me") as Railway env vars, fetched via `zoomAccessToken()`'s in-memory
+cache. Blocked on whoever has Zoom account-owner/admin rights creating that app (not
+Divith -- he doesn't have that access); see the Zoom API access request sent
+directly as a file. If Zoom isn't configured, or the lookup errors, or nothing
+matches, it falls through to the existing Drive-based logic silently -- the tool
+always returns something, it just prefers the live source when available.
+
 ## Constraints carried over
 
 - Public repo: `SLACK_CLIENT_SECRET` / `GOOGLE_CLIENT_SECRET` / tokens never

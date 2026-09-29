@@ -23,6 +23,14 @@ module.exports = function mountFeedback(app, db) {
   const SLACK_CLIENT_SECRET = process.env.SLACK_CLIENT_SECRET;
   const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID;
   const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
+  // Server-to-Server OAuth -- an account-level credential, not a per-user
+  // grant, so there's no /auth/zoom/start flow and nothing stored in
+  // oauth_tokens for it: just fetch (and cache) an access token whenever
+  // it's needed, the same way client_credentials works elsewhere.
+  const ZOOM_ACCOUNT_ID = process.env.ZOOM_ACCOUNT_ID;
+  const ZOOM_CLIENT_ID = process.env.ZOOM_CLIENT_ID;
+  const ZOOM_CLIENT_SECRET = process.env.ZOOM_CLIENT_SECRET;
+  const ZOOM_USER_ID = process.env.ZOOM_USER_ID; // whose recordings to search -- S2S has no "me"
 
   function baseUrl(req) {
     return req.protocol + "://" + req.get("host");
@@ -143,13 +151,77 @@ module.exports = function mountFeedback(app, db) {
     return row ? row.access_token : null;
   }
 
+  // ---- Zoom: Server-to-Server OAuth (account_credentials grant) -----------
+  let zoomTokenCache = null; // { token, expiresAt } -- in-memory only, no per-user grant to persist
+
+  async function zoomAccessToken() {
+    if (!ZOOM_ACCOUNT_ID || !ZOOM_CLIENT_ID || !ZOOM_CLIENT_SECRET) return null;
+    if (zoomTokenCache && zoomTokenCache.expiresAt > Date.now() + 60000) return zoomTokenCache.token;
+    const basic = Buffer.from(ZOOM_CLIENT_ID + ":" + ZOOM_CLIENT_SECRET).toString("base64");
+    const res = await fetch(
+      "https://zoom.us/oauth/token?grant_type=account_credentials&account_id=" + encodeURIComponent(ZOOM_ACCOUNT_ID),
+      { method: "POST", headers: { Authorization: "Basic " + basic } }
+    );
+    const data = await res.json();
+    if (!res.ok || !data.access_token) throw new Error("Zoom token request failed: " + (data.reason || data.error || res.status));
+    zoomTokenCache = { token: data.access_token, expiresAt: Date.now() + (data.expires_in || 3600) * 1000 };
+    return data.access_token;
+  }
+
+  // WebVTT -> plain text: drop the header, cue-index lines, and timestamp
+  // lines, keep only the spoken text.
+  function vttToText(vtt) {
+    return String(vtt || "").split("\n")
+      .filter((line) => line.trim() && line.trim() !== "WEBVTT" && !/-->/.test(line) && !/^\d+$/.test(line.trim()))
+      .join(" ").replace(/\s+/g, " ").trim();
+  }
+
+  // Returns transcript text for the best-matching recent Zoom recording, or
+  // null if Zoom isn't configured / nothing matched -- tGetMeetingTranscript
+  // falls back to Drive in either case.
+  async function findZoomTranscript(keyword) {
+    const token = await zoomAccessToken();
+    if (!token || !ZOOM_USER_ID) return null;
+    const params = new URLSearchParams({ page_size: "30" });
+    const res = await fetch(
+      "https://api.zoom.us/v2/users/" + encodeURIComponent(ZOOM_USER_ID) + "/recordings?" + params,
+      { headers: { Authorization: "Bearer " + token } }
+    );
+    const data = await res.json();
+    if (!res.ok) throw new Error("Zoom recordings list failed: " + (data.message || res.status));
+    const meetings = data.meetings || [];
+    if (!meetings.length) return null;
+
+    const tokens = keyword.toLowerCase().split(/\s+/).filter((t) => t.length >= 3);
+    const scored = meetings.map((mtg) => {
+      const topic = String(mtg.topic || "").toLowerCase();
+      const score = tokens.length ? tokens.filter((t) => topic.includes(t)).length : 0;
+      return { mtg, score };
+    });
+    scored.sort((a, b) => b.score - a.score || new Date(b.mtg.start_time) - new Date(a.mtg.start_time));
+    const best = tokens.length ? scored.find((s) => s.score > 0) : scored[0];
+    if (!best) return null;
+
+    const files = best.mtg.recording_files || [];
+    const transcriptFile = files.find((f) => f.file_type === "TRANSCRIPT");
+    if (!transcriptFile) return null;
+    const fileRes = await fetch(transcriptFile.download_url, { headers: { Authorization: "Bearer " + token } });
+    if (!fileRes.ok) throw new Error("Zoom transcript download failed: " + fileRes.status);
+    const vtt = await fileRes.text();
+    return "Meeting: " + best.mtg.topic + " (" + best.mtg.start_time + ")\n\n" + vttToText(vtt);
+  }
+
   // ---- status -------------------------------------------------------------
 
   app.get("/api/feedback/status", async (_req, res) => {
-    if (!db.pool) { res.json({ slack: "unknown", google: "unknown" }); return; }
+    const zoomConfigured = !!(ZOOM_ACCOUNT_ID && ZOOM_CLIENT_ID && ZOOM_CLIENT_SECRET && ZOOM_USER_ID);
+    if (!db.pool) { res.json({ slack: "unknown", google: "unknown", zoom: zoomConfigured ? "configured" : "not configured" }); return; }
     try {
       const [slack, google] = await Promise.all([db.getToken("slack"), db.getToken("google")]);
-      res.json({ slack: slack ? "connected" : "unknown", google: google ? "connected" : "unknown" });
+      res.json({
+        slack: slack ? "connected" : "unknown", google: google ? "connected" : "unknown",
+        zoom: zoomConfigured ? "configured" : "not configured",
+      });
     } catch (e) {
       res.status(500).json({ error: String((e && e.message) || e) });
     }
@@ -205,9 +277,20 @@ module.exports = function mountFeedback(app, db) {
   }
 
   async function tGetMeetingTranscript(input) {
+    const keyword = String(input.keyword || "").trim();
+
+    try {
+      const zoomHit = await findZoomTranscript(keyword);
+      if (zoomHit) return truncate(zoomHit, 16000);
+    } catch (e) {
+      // Zoom misconfigured or the API call failed -- fall through to Drive
+      // rather than surface a Zoom-specific error for what's still a
+      // meeting-transcript question.
+      console.error("Zoom transcript lookup failed, falling back to Drive:", e);
+    }
+
     const token = await googleAccessToken();
     if (!token) return "Google isn't connected yet.";
-    const keyword = String(input.keyword || "").trim();
     const params = new URLSearchParams({
       q: "'" + MEETING_FOLDER_ID + "' in parents and trashed = false",
       orderBy: "modifiedTime desc", pageSize: "10", fields: "files(id,name,modifiedTime)",
@@ -343,7 +426,7 @@ module.exports = function mountFeedback(app, db) {
       description: "Read the recent message history of one Slack channel, given its channel ID (find one via search_slack first -- results show 'Channel: #name (ID: Cxxxx)').",
       input_schema: { type: "object", properties: { channel_id: { type: "string" }, limit: { type: "number", description: "Max messages, default 30" } }, required: ["channel_id"] } },
     { name: "get_meeting_transcript",
-      description: "Find and read a meeting transcript from Position2's daily meeting-notes Drive folder. Give a client name or topic keyword; returns the matching meeting section(s) (title, date, full transcript) from the most recent daily doc(s), or a list of meeting titles found if nothing matches the keyword.",
+      description: "Find and read a meeting transcript. Checks Zoom's own cloud recordings first (live, when configured) for a matching meeting's real transcript, then falls back to Position2's daily meeting-notes Drive folder if Zoom has nothing. Give a client name or topic keyword; returns the matching meeting's transcript (title, date, full text), or a list of meeting titles found if nothing matches the keyword.",
       input_schema: { type: "object", properties: { keyword: { type: "string", description: "Client name or topic to find, e.g. 'Riccobene' or 'Beta Bionics'" } }, required: ["keyword"] } },
     { name: "get_budget_snapshot",
       description: "Read Position2's Budget Tracker sheet (allocated budgets, target CPA/ROAS, status, channel per account). Optionally filter to rows mentioning one client.",
