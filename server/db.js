@@ -39,6 +39,13 @@ async function ensureSchema() {
       applied BOOLEAN NOT NULL DEFAULT false,
       applied_at TEXT
     );
+    CREATE TABLE IF NOT EXISTS oauth_tokens (
+      provider TEXT PRIMARY KEY,
+      access_token TEXT NOT NULL,
+      refresh_token TEXT,
+      expires_at TIMESTAMPTZ,
+      meta JSONB
+    );
   `);
 }
 
@@ -127,7 +134,31 @@ async function seedDay({ meta, clients, latest }) {
   }
 }
 
+// Single-tenant token store -- one row per provider ("slack", "google"),
+// holding whichever human authorized that connector (matches the original
+// Client Feedback Agent's "reads with your own access" framing).
+async function getToken(provider) {
+  const { rows } = await pool.query(
+    "SELECT access_token, refresh_token, expires_at, meta FROM oauth_tokens WHERE provider = $1",
+    [provider]
+  );
+  return rows.length ? rows[0] : null;
+}
+
+async function setToken(provider, { accessToken, refreshToken, expiresAt, meta }) {
+  await pool.query(
+    `INSERT INTO oauth_tokens (provider, access_token, refresh_token, expires_at, meta)
+     VALUES ($1, $2, $3, $4, $5)
+     ON CONFLICT (provider) DO UPDATE SET
+       access_token = EXCLUDED.access_token,
+       refresh_token = COALESCE(EXCLUDED.refresh_token, oauth_tokens.refresh_token),
+       expires_at = EXCLUDED.expires_at,
+       meta = EXCLUDED.meta`,
+    [provider, accessToken, refreshToken || null, expiresAt || null, meta || null]
+  );
+}
+
 module.exports = {
   pool, ensureSchema, listSnapshots, getSnapshotMeta, getSnapshotClients,
-  getLatest, listMoves, upsertMove, seedDay,
+  getLatest, listMoves, upsertMove, seedDay, getToken, setToken,
 };

@@ -142,7 +142,7 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
       <h1><span class="dot"></span>Client Feedback Agent</h1>
       <span class="tag">Position2 · PPC Ops</span>
     </div>
-    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab">&larr; Agent Desk</a>
+    <a class="back" href="https://claude.ai/code/artifact/4b6f918a-fc9b-468a-8e28-eff3f6204bab" data-local="agent_desk.html">&larr; Agent Desk</a>
   </div>
   <div class="sources" id="sources"></div>
 </header>
@@ -188,6 +188,7 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
   const sourcesEl = document.getElementById("sources");
 
   let mcp = null, sample = null;
+  const INSIDE_CLAUDE = !!(window.claude && window.claude.use);
   let serverCache = {};
   let turns = [];           // SampleMessage[] the page keeps
   let ctl = null;           // current AbortController
@@ -458,12 +459,25 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
       execute: tReadEmail },
   ];
 
+  // ---- standalone chat (no Claude sandbox -- our own server-side tool loop) --
+  async function postFeedbackChat(message, history, signal){
+    const res = await fetch("/api/feedback/chat", {
+      method: "POST", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message, history }), signal,
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error || ("Request failed (" + res.status + ")"));
+    return data;
+  }
+
   // ---- send flow ------------------------------------------------------------
   async function send(text){
     text = text.trim();
-    if (!text || !sample) return;
+    if (!text) return;
+    if (INSIDE_CLAUDE && !sample) return;
 
     addMessage("user", text);
+    const historyForServer = turns.slice(); // plain {role, content} turns, before this one
     turns.push({ role: "user", content: text });
     input.value = ""; autoGrow();
     sendBtn.disabled = true;
@@ -477,27 +491,37 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
 
     let full = "";
     try {
-      const res = await sample(
-        [{ role: "user", content: INSTRUCTIONS }, ...turns],
-        {
-          signal: ctl.signal,
-          tools: TOOLS,
-          onText: (u) => { bub.classList.remove("thinking"); bub.textContent = u.text; full = u.text; scrollToEnd(); },
-        }
-      );
-      full = res.text;
-      bub.classList.remove("thinking");
-      bub.textContent = full;
-      turns.push({ role: "assistant", content: full });
-      setStatus("");
-      addToolTrace(Array.from(new Set(usedTools)));
-      if (res.truncated) addError("The answer was cut short — try asking for less at once.");
+      if (!INSIDE_CLAUDE) {
+        const data = await postFeedbackChat(text, historyForServer, ctl.signal);
+        full = data.text || "";
+        bub.classList.remove("thinking");
+        bub.textContent = full;
+        turns.push({ role: "assistant", content: full });
+        setStatus("");
+        addToolTrace(data.toolsUsed || []);
+      } else {
+        const res = await sample(
+          [{ role: "user", content: INSTRUCTIONS }, ...turns],
+          {
+            signal: ctl.signal,
+            tools: TOOLS,
+            onText: (u) => { bub.classList.remove("thinking"); bub.textContent = u.text; full = u.text; scrollToEnd(); },
+          }
+        );
+        full = res.text;
+        bub.classList.remove("thinking");
+        bub.textContent = full;
+        turns.push({ role: "assistant", content: full });
+        setStatus("");
+        addToolTrace(Array.from(new Set(usedTools)));
+        if (res.truncated) addError("The answer was cut short — try asking for less at once.");
+      }
     } catch (e) {
       bub.classList.remove("thinking");
       if (e && e.text) { bub.textContent = e.text; turns.push({ role: "assistant", content: e.text }); }
       else { bub.remove(); }
       setStatus("");
-      addError(copyForError(e));
+      addError(INSIDE_CLAUDE ? copyForError(e) : ((e && e.message) || "Something went wrong answering that."));
     } finally {
       sendBtn.disabled = false;
       ctl = null;
@@ -540,12 +564,35 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     sourcesEl.appendChild(p);
   }
 
+  // Standalone (e.g. Railway): there's no per-viewer Claude connector to
+  // check -- this is our own single-tenant OAuth grant instead. An
+  // unconnected pill is a link straight to that provider's /auth/*/start.
+  function renderConnectPill(label, state, startUrl){
+    const connected = state === "connected";
+    const p = document.createElement(connected ? "span" : "a");
+    p.className = "src-pill"; p.dataset.state = state || "unknown";
+    if (!connected) p.href = startUrl;
+    p.innerHTML = '<span class="b"></span>' + label + (connected ? "" : " — connect");
+    sourcesEl.appendChild(p);
+  }
+
+  async function bootStandalone(){
+    document.querySelectorAll("a[data-local]").forEach(function(a){
+      a.href = a.getAttribute("data-local");
+      a.removeAttribute("target");
+    });
+    footNote.textContent = "Reads live from Slack and Google (Drive + Gmail) once connected above — nothing is stored beyond the connection itself.";
+    let status = { slack: "unknown", google: "unknown" };
+    try {
+      const res = await fetch("/api/feedback/status");
+      status = await res.json();
+    } catch (e) { /* keep both pills "unknown" -- fetch itself failed */ }
+    renderConnectPill("Slack", status.slack, "/auth/slack/start");
+    renderConnectPill("Google (Drive + Gmail)", status.google, "/auth/google/start");
+  }
+
   async function boot(){
-    if (!window.claude || !window.claude.use) {
-      footNote.textContent = "This page needs to be opened inside Claude to work.";
-      sendBtn.disabled = true;
-      return;
-    }
+    if (!INSIDE_CLAUDE) { await bootStandalone(); return; }
     sample = await window.claude.use("sample");
     mcp = await window.claude.use("mcp");
 

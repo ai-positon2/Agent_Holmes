@@ -138,6 +138,8 @@ app.post("/api/pacing/seed", requireDb, (req, res) => {
   db.seedDay(req.body || {}).then(() => res.json({ ok: true }), onDbError(res));
 });
 
+require("./feedback")(app, db);
+
 app.get("/healthz", (_req, res) => res.send("ok"));
 
 const PORT = process.env.PORT || 8080;
