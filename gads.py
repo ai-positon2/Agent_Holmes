@@ -223,6 +223,13 @@ def resolve(df: pd.DataFrame, budgets: pd.DataFrame,
         # The export is one channel only; a Meta/Bing budget row must not
         # be matched against Google spend.
         b = b[b["channel"].str.contains(channel, case=False, na=False)]
+    # Paused accounts often get renamed in the tracker at the same time their
+    # budget is zeroed out (e.g. "Great Lakes" -> "Great Lakes Family
+    # Dental"), so they'd fail an exact key match too — keep their names
+    # (channel-matched, but not yet budget-filtered) for a substring check
+    # below, to tell "paused" apart from "never budgeted at all".
+    paused_names = (b.loc[b["status"].str.lower() == "paused", "account"].str.lower().tolist()
+                    if "status" in b else [])
     b = b[b["allocated_budget"] > 0]
 
     by_acct = {k: (c, a) for k, c, a in zip(b["key"], b["client"], b["account"])}
@@ -273,6 +280,9 @@ def resolve(df: pd.DataFrame, budgets: pd.DataFrame,
                 locs = sorted(set(g["campaign"].map(rule)))
                 warns.append(f"'{raw}' — {len(locs)} location(s) spent ${spend:,.0f} "
                              f"MTD with no budget row: {', '.join(locs)}")
+            elif (name := str(g["_alias"].iloc[0]).lower()) and any(
+                    name in an or an in name for an in paused_names):
+                warns.append(f"'{raw}' spent ${spend:,.0f} until it was paused.")
             else:
                 warns.append(f"'{raw}' spent ${spend:,.0f} MTD but has no "
                              f"{channel} budget row in the Budget Tracker.")
