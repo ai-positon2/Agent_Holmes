@@ -22,14 +22,36 @@ const landingDir = fs.existsSync(path.join(__dirname, "landing"))
   ? path.join(__dirname, "landing")
   : path.join(__dirname, "..", "landing");
 // These pages were built as Claude Artifact fragments -- Claude's own
-// Artifact host wraps them in a shell that declares UTF-8 automatically.
-// Served directly, there's no such wrapper and no charset anywhere, so
-// browsers guess wrong on every em dash, arrow, and middle dot. Force it.
-app.use(express.static(landingDir, {
-  setHeaders(res, filePath) {
-    if (filePath.endsWith(".html")) res.setHeader("Content-Type", "text/html; charset=utf-8");
-  },
-}));
+// Artifact host wraps every one in a shell (doctype, charset, and a base
+// reset CSS that includes "[hidden]{display:none!important}") before
+// rendering it. Served directly with none of that: no charset means
+// browsers guess wrong on every em dash and arrow, no doctype triggers
+// Quirks Mode, and -- the one that actually breaks these pages -- with no
+// "!important" forcing [hidden] to win, a page's own authored CSS (e.g.
+// ".overlay{display:flex}") permanently outranks the [hidden] attribute
+// per normal CSS cascade rules (author-origin beats user-agent-origin
+// regardless of selector specificity). That makes anything toggled via
+// `el.hidden = true/false` in JS never actually hide: the overlay looks
+// stuck open even after the run underneath has long finished. Wrap every
+// .html fragment in the same shell Claude's own host provides, so these
+// pages render identically inside or outside the sandbox.
+const ARTIFACT_SHELL_HEAD = '<!doctype html><html><head><meta charset="utf-8">' +
+  '<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">' +
+  '<style>[hidden]:not([hidden=until-found i]){display:none!important}body{margin:0}</style>' +
+  "</head><body>";
+const ARTIFACT_SHELL_TAIL = "</body></html>";
+app.use((req, res, next) => {
+  if (!req.path.endsWith(".html")) { next(); return; }
+  const filePath = path.join(landingDir, path.normalize(decodeURIComponent(req.path)));
+  if (!filePath.startsWith(landingDir)) { next(); return; }
+  fs.readFile(filePath, "utf8", (err, content) => {
+    if (err) { next(); return; }
+    res.setHeader("Content-Type", "text/html; charset=utf-8");
+    const alreadyWrapped = /^\s*<!doctype/i.test(content);
+    res.send(alreadyWrapped ? content : ARTIFACT_SHELL_HEAD + content + ARTIFACT_SHELL_TAIL);
+  });
+});
+app.use(express.static(landingDir));
 
 const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 const ANTHROPIC_MODEL = process.env.ANTHROPIC_MODEL || "claude-sonnet-5";
