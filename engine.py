@@ -877,9 +877,13 @@ def run(campaigns: pd.DataFrame, budgets: pd.DataFrame,
                 campaigns=[], moves=[],
                 notes=["No campaign rows matched this account — check the name mapping."]))
             continue
+        # This account's own feed can lag the rest of the portfolio (a
+        # Supermetrics sync gap that hasn't hit every account the same day) —
+        # judge it against its own last complete day, not the portfolio's.
+        acct_clock = clock.with_data_through(df["date"].max().date())
         out.append(analyse_account(
             client, acct, float(row["allocated_budget"] or 0),
             (float(row["target_cpa"]) if pd.notna(row.get("target_cpa")) and
              str(row.get("target_cpa")).replace(".", "").isdigit() else None),
-            str(row.get("days_running") or ""), df, clock))
+            str(row.get("days_running") or ""), df, acct_clock))
     return out

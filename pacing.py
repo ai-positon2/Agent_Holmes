@@ -56,6 +56,10 @@ class Clock:
         self.data_through = data_through or (as_of - dt.timedelta(days=1))
         self.elapsed = as_of.day - 1                       # client's rule
         self.remaining = self.dim - self.elapsed
+        # The elapsed to measure a reporting *lag* against, kept separate
+        # from `elapsed` itself once `with_data_through` narrows the latter
+        # for one account — see lag_days().
+        self._lag_reference_elapsed = self.elapsed
 
     # --- benchmarks -------------------------------------------------------
     def ideal_calendar(self) -> float:
@@ -91,7 +95,29 @@ class Clock:
         if self.data_through >= self.as_of - dt.timedelta(days=1):
             return 0
         return active_days(self.year, self.month, schedule,
-                           self.data_through.day + 1, self.elapsed)
+                           self.data_through.day + 1, self._lag_reference_elapsed)
+
+    # --- per-account data lag ----------------------------------------------
+    def with_data_through(self, data_through: dt.date) -> "Clock":
+        """A clock judging pacing as of one account's own last complete day,
+        when its feed lags behind the rest of the portfolio (e.g. a
+        Supermetrics sync gap that hit this account but not others). The
+        portfolio-wide clock already reports `data_through` as the max date
+        seen across every account, which can hide a real per-account gap —
+        this narrows `elapsed` to what THIS account's own data actually
+        covers, so ideal-pacing and run-rate math isn't judged against days
+        it has no data for.
+
+        `active_days_left` deliberately keeps using the true calendar day
+        (`as_of`), not this narrowed elapsed — a lagging report doesn't
+        change how many real days are left in the month to spend.
+        """
+        if data_through >= self.data_through:
+            return self
+        c = Clock(self.as_of, data_through)
+        c.elapsed = min(self.elapsed, data_through.day)
+        c.remaining = self.dim - c.elapsed
+        return c
 
 
 def verdict(actual_pct: float, ideal_pct: float) -> tuple[str, float]:
