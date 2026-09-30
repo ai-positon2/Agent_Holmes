@@ -52,8 +52,12 @@ class Clock:
         self.as_of = as_of
         self.year, self.month = as_of.year, as_of.month
         self.dim = month_days(self.year, self.month)
-        # Complete days of data we are allowed to judge on.
-        self.data_through = data_through or (as_of - dt.timedelta(days=1))
+        # Complete days of data we are allowed to judge on. Today is never
+        # complete -- some accounts' near-real-time reporting can already
+        # show a partial row for it by the time we run -- so never let this
+        # exceed yesterday, however fresh the raw data claims to be.
+        yesterday = as_of - dt.timedelta(days=1)
+        self.data_through = min(data_through, yesterday) if data_through else yesterday
         self.elapsed = as_of.day - 1                       # client's rule
         self.remaining = self.dim - self.elapsed
         # The elapsed to measure a reporting *lag* against, kept separate
