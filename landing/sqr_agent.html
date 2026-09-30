@@ -599,6 +599,16 @@ const RULESETS = { riccobene: RICCOBENE, oia: OIA, eventgroove: EVENTGROOVE, gen
 // LLM-assisted stage for rows the deterministic pass couldn't resolve
 // =====================================================================
 let sample = null;
+function yieldToUI(){ return new Promise(r => setTimeout(r, 0)); }
+// A hung model call (sandbox bridge under load, or a stalled fetch to our
+// own /api/sample) must never freeze the whole run forever -- fail that one
+// batch after a bounded wait instead, so classifyPending always finishes.
+function withTimeout(promise, ms){
+  return new Promise((resolve, reject) => {
+    const t = setTimeout(() => reject(new Error("Model call timed out after " + ms + "ms")), ms);
+    promise.then(v => { clearTimeout(t); resolve(v); }, e => { clearTimeout(t); reject(e); });
+  });
+}
 // Inside Claude's Artifact sandbox, `sample` (set in boot()) talks to the
 // model directly. Served standalone (e.g. from Railway), window.claude
 // never exists, so this falls back to this deployment's own backend route
@@ -628,10 +638,10 @@ async function classifyPending(ruleset, terms, statusCb){
       '[{"term": "...", "status": "Relevant"|"Competitor"|"Not Relevant"|"Client Review", "subtype": "short label"}]\n\n' +
       "Terms:\n" + batch.map(t => "- " + t).join("\n");
     try {
-      const res = await callSample(prompt);
+      const res = await withTimeout(callSample(prompt), 45000);
       const arr = Array.isArray(res) ? res : [];
       arr.forEach(r => { if (r && r.term) out[r.term] = { status: r.status || "Not Relevant", subtype: r.subtype || "" }; });
-    } catch (e) { /* leave unresolved terms out; caller defaults them */ }
+    } catch (e) { /* leave unresolved terms out (incl. a timeout); caller defaults them */ }
     batch.forEach(t => { if (!out[t]) out[t] = { status: "Not Relevant", subtype: "No Clear Intent" }; });
   }
   return out;
@@ -645,25 +655,11 @@ let lastResult = null;
 async function runAnalysis(ruleset, termsCsv, keywordsCsv, negsCsv, statusCb){
   statusCb("Parsing files…");
   const termsParsed = parseCSV(termsCsv);
-  const rows = termsParsed.rows
-    .map(r => ({
-      term: String(pick(r, "Search term", "Search Term")).trim(),
-      campaign: String(pick(r, "Campaign")).trim(),
-      adGroup: String(pick(r, "Ad group", "Ad Group")).trim(),
-      campaignType: String(pick(r, "Campaign type", "Campaign Type")).trim(),
-      clicks: num(pick(r, "Clicks")),
-      impressions: num(pick(r, "Impr.", "Impressions")),
-      cost: num(pick(r, "Cost")),
-      conversions: num(pick(r, "Conversions", "Conv.")),
-    }))
-    .filter(r => r.term && !/^total:/i.test(r.term));
+  await yieldToUI();
 
-  if (!rows.length) {
-    if (!termsParsed.headerFound) {
-      const preview = termsParsed.preview.map(r => "[" + r.join(" | ") + "]").join("  ");
-      throw new Error("Couldn't find a 'Search term' column in that file. First few lines detected: " + preview);
-    }
-    throw new Error("Found a 'Search term' column, but every row was empty or a 'Total:' subtotal — check the file has real data rows and try again. Columns found: " + termsParsed.header.join(", "));
+  if (!termsParsed.headerFound) {
+    const preview = termsParsed.preview.map(r => "[" + r.join(" | ") + "]").join("  ");
+    throw new Error("Couldn't find a 'Search term' column in that file. First few lines detected: " + preview);
   }
 
   const existingKeywords = new Set();
@@ -676,14 +672,46 @@ async function runAnalysis(ruleset, termsCsv, keywordsCsv, negsCsv, statusCb){
     const kw = String(pick(r, "Negative keyword", "Keyword")).trim().toLowerCase().replace(/[\[\]"]/g, "");
     if (kw) existingNegs.add(kw);
   });
+  await yieldToUI();
 
-  statusCb("Running deterministic rules on " + rows.length + " rows…");
+  // Classifying a row means ~15 regex/array checks against it -- on a big
+  // export (tens of thousands of rows) that's real CPU time, and none of it
+  // was ever `await`ed, so the whole stretch used to run as one
+  // uninterrupted block: the browser never got a chance to repaint, and the
+  // overlay looked frozen at "Starting…" the entire time even though work
+  // was progressing underneath. Chunk it and yield back to the event loop
+  // periodically so the status line -- and the tab itself -- stay responsive.
+  const rows = [];
   const pendingTerms = new Set();
-  rows.forEach(r => {
-    r._slug = normSlug(r.campaign);
-    r._det = ruleset.classifyDeterministic(r.term, r._slug);
-    if (!r._det) pendingTerms.add(r.term);
-  });
+  const CHUNK = 1500;
+  for (let i = 0; i < termsParsed.rows.length; i++){
+    const raw = termsParsed.rows[i];
+    const term = String(pick(raw, "Search term", "Search Term")).trim();
+    if (term && !/^total:/i.test(term)){
+      const r = {
+        term,
+        campaign: String(pick(raw, "Campaign")).trim(),
+        adGroup: String(pick(raw, "Ad group", "Ad Group")).trim(),
+        campaignType: String(pick(raw, "Campaign type", "Campaign Type")).trim(),
+        clicks: num(pick(raw, "Clicks")),
+        impressions: num(pick(raw, "Impr.", "Impressions")),
+        cost: num(pick(raw, "Cost")),
+        conversions: num(pick(raw, "Conversions", "Conv.")),
+      };
+      r._slug = normSlug(r.campaign);
+      r._det = ruleset.classifyDeterministic(r.term, r._slug);
+      if (!r._det) pendingTerms.add(r.term);
+      rows.push(r);
+    }
+    if (i > 0 && i % CHUNK === 0){
+      statusCb("Running deterministic rules… " + i + "/" + termsParsed.rows.length + " rows");
+      await yieldToUI();
+    }
+  }
+
+  if (!rows.length) {
+    throw new Error("Found a 'Search term' column, but every row was empty or a 'Total:' subtotal — check the file has real data rows and try again. Columns found: " + termsParsed.header.join(", "));
+  }
 
   const llmResults = await classifyPending(ruleset, Array.from(pendingTerms), statusCb);
   rows.forEach(r => { if (!r._det) r._det = llmResults[r.term] || { status: "Not Relevant", subtype: "No Clear Intent" }; });
