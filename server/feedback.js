@@ -182,7 +182,12 @@ module.exports = function mountFeedback(app, db) {
   async function findZoomTranscript(keyword) {
     const token = await zoomAccessToken();
     if (!token || !ZOOM_USER_ID) return null;
-    const params = new URLSearchParams({ page_size: "30" });
+    // Zoom only returns a short recent window unless told otherwise; one
+    // month is the most its recordings API accepts in a single call.
+    const day = (d) => d.toISOString().slice(0, 10);
+    const params = new URLSearchParams({
+      page_size: "30", from: day(new Date(Date.now() - 30 * 86400000)), to: day(new Date()),
+    });
     const res = await fetch(
       "https://api.zoom.us/v2/users/" + encodeURIComponent(ZOOM_USER_ID) + "/recordings?" + params,
       { headers: { Authorization: "Bearer " + token } }
@@ -291,19 +296,37 @@ module.exports = function mountFeedback(app, db) {
 
     const token = await googleAccessToken();
     if (!token) return "Google isn't connected yet.";
-    const params = new URLSearchParams({
-      q: "'" + MEETING_FOLDER_ID + "' in parents and trashed = false",
-      orderBy: "modifiedTime desc", pageSize: "10", fields: "files(id,name,modifiedTime)",
-    });
-    const listRes = await fetch("https://www.googleapis.com/drive/v3/files?" + params, {
-      headers: { Authorization: "Bearer " + token },
-    });
-    const listing = await listRes.json();
-    const files = listing.files || [];
-    if (!files.length) return "No meeting-transcript documents found in the Meeting Notes folder yet.";
-    const candidates = files.slice(0, 2);
+    const listMeetingDocs = async (q, pageSize) => {
+      const params = new URLSearchParams({
+        q, orderBy: "modifiedTime desc", pageSize: String(pageSize), fields: "files(id,name,modifiedTime)",
+      });
+      const listRes = await fetch("https://www.googleapis.com/drive/v3/files?" + params, {
+        headers: { Authorization: "Bearer " + token },
+      });
+      const listing = await listRes.json();
+      return listing.files || [];
+    };
 
     const tokens = keyword.toLowerCase().split(/\s+/).filter((t) => t.length >= 3);
+    const folderQ = "'" + MEETING_FOLDER_ID + "' in parents and trashed = false";
+    // Ask Drive which docs actually mention the keyword (all words first,
+    // then any word), so a call from weeks ago is found however many daily
+    // docs have been written since. Only fall back to "the newest two" when
+    // there's no keyword or Drive finds nothing.
+    let candidates = [];
+    if (tokens.length) {
+      const clause = (t) => "fullText contains '" + t.replace(/[\\']/g, "\\$&") + "'";
+      for (const joiner of [" and ", " or "]) {
+        const hits = await listMeetingDocs(folderQ + " and (" + tokens.map(clause).join(joiner) + ")", 30);
+        if (hits.length) { candidates = hits.slice(0, 3); break; }
+      }
+    }
+    if (!candidates.length) {
+      const recent = await listMeetingDocs(folderQ, 10);
+      if (!recent.length) return "No meeting-transcript documents found in the Meeting Notes folder yet.";
+      candidates = recent.slice(0, 2);
+    }
+
     const allTitles = [];
     const scored = [];
     for (const f of candidates) {
@@ -329,7 +352,7 @@ module.exports = function mountFeedback(app, db) {
       scored.sort((a, b) => ((b.titleScore > 0) - (a.titleScore > 0)) || (b.len - a.len));
       return truncate(scored.slice(0, 2).map((s) => s.section).join("\n\n---\n\n"), 16000);
     }
-    return "No meeting matching \"" + keyword + "\" found in the most recent transcript doc(s). " +
+    return "No meeting matching \"" + keyword + "\" found in the transcript doc(s) checked. " +
       "Meetings that WERE found: " + truncate(allTitles.join(" | "), 1500) +
       " -- try calling this again with a keyword closer to one of those titles.";
   }

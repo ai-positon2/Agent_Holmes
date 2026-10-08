@@ -328,21 +328,36 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
     const keyword = String(input.keyword || "").trim();
     setStatus('Looking for a "' + keyword + '" meeting in the daily transcripts…');
     const drive = await getServer("Google Drive");
-    const listing = await drive.search_files({
-      query: "parentId = '" + MEETING_FOLDER_ID + "'",
-      pageSize: 10,
-    });
-    const files = (listing && listing.files) || [];
-    if (!files.length) return "No meeting-transcript documents found in the Meeting Notes folder yet.";
-    files.sort((a, b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
-    const candidates = files.slice(0, 2);
-
     // Match by TOKEN, not whole-phrase — real meeting titles are often
     // abbreviated or nicknamed ("BetaB Internal Weekly Cadence" for a
     // "Beta Bionics" question), so a literal substring check on the full
     // keyword misses the real meeting and can surface an unrelated one
     // whose title happens to contain the whole phrase instead.
     const tokens = keyword.toLowerCase().split(/\s+/).filter(t => t.length >= 3);
+    const folderQ = "parentId = '" + MEETING_FOLDER_ID + "'";
+    const listDocs = async (q, pageSize) => {
+      const listing = await drive.search_files({ query: q, pageSize, excludeContentSnippets: true });
+      const found = (listing && listing.files) || [];
+      found.sort((a, b) => new Date(b.modifiedTime) - new Date(a.modifiedTime));
+      return found;
+    };
+    // Ask Drive which docs actually mention the keyword (all words first,
+    // then any word), so a call from weeks ago is found however many daily
+    // docs have been written since. Only fall back to "the newest two" when
+    // there's no keyword or Drive finds nothing.
+    let candidates = [];
+    if (tokens.length) {
+      const clause = t => "fullText contains '" + t.replace(/[\\']/g, "\\$&") + "'";
+      for (const joiner of [" and ", " or "]) {
+        const hits = await listDocs(folderQ + " and (" + tokens.map(clause).join(joiner) + ")", 30);
+        if (hits.length) { candidates = hits.slice(0, 3); break; }
+      }
+    }
+    if (!candidates.length) {
+      const recent = await listDocs(folderQ, 10);
+      if (!recent.length) return "No meeting-transcript documents found in the Meeting Notes folder yet.";
+      candidates = recent.slice(0, 2);
+    }
     const allTitles = [];
     const scored = [];
     for (const f of candidates) {
@@ -378,7 +393,7 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
       const out = scored.slice(0, 2).map(s => s.section).join("\n\n---\n\n");
       return truncate(out, 16000);
     }
-    return "No meeting matching \"" + keyword + "\" found in the most recent transcript doc(s). " +
+    return "No meeting matching \"" + keyword + "\" found in the transcript doc(s) checked. " +
       "Meetings that WERE found: " + truncate(allTitles.join(" | "), 1500) +
       " — try calling this again with a keyword closer to one of those titles.";
   }
@@ -442,7 +457,7 @@ button.stop{font-family:Archivo,sans-serif;font-weight:600;font-size:12px;
       inputSchema: { type: "object", properties: { channel_id: { type: "string" }, limit: { type: "number", description: "Max messages, default 30" } }, required: ["channel_id"] },
       execute: tReadSlackChannel },
     { name: "get_meeting_transcript",
-      description: "Find and read a meeting transcript from Position2's daily meeting-notes Drive folder. Give a client name or topic keyword; returns the matching meeting section(s) (title, date, full transcript) from the most recent daily doc(s), or a list of meeting titles found if nothing matches the keyword.",
+      description: "Find and read a meeting transcript from Position2's daily meeting-notes Drive folder. Give a client name or topic keyword; returns the matching meeting section(s) (title, date, full transcript) from whichever daily doc(s) mention it (searches the whole folder, not just the newest), or a list of meeting titles found if nothing matches the keyword.",
       inputSchema: { type: "object", properties: { keyword: { type: "string", description: "Client name or topic to find, e.g. 'Riccobene' or 'Beta Bionics'" } }, required: ["keyword"] },
       execute: tGetMeetingTranscript },
     { name: "get_budget_snapshot",
