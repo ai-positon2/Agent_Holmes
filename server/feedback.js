@@ -8,7 +8,8 @@
 const MEETING_FOLDER_ID = "1hc1fPOHKsUNGbqBClcb4G7qwa5T38KYf";
 const BUDGET_TRACKER_ID = "1X_HjD0NUzp1br9SsLV7AICdS_SokdYuzbXc75ENVJ7A";
 
-const SLACK_SCOPES = "search:read,channels:history,groups:history,im:history,mpim:history,channels:read,groups:read";
+const SLACK_SCOPES = "search:read.public,search:read.private,search:read.mpim,search:read.im,search:read.users," +
+  "channels:history,groups:history,im:history,mpim:history,channels:read,groups:read";
 const GOOGLE_SCOPES = "https://www.googleapis.com/auth/gmail.readonly https://www.googleapis.com/auth/drive.readonly";
 
 function truncate(s, n) {
@@ -249,22 +250,36 @@ module.exports = function mountFeedback(app, db) {
   async function tSearchSlack(input) {
     const token = await slackAccessToken();
     if (!token) return "Slack isn't connected yet.";
-    const params = new URLSearchParams({
-      query: String(input.query || ""), count: "20",
-      sort: input.sort === "relevance" ? "score" : "timestamp", sort_dir: "desc",
-    });
-    const res = await fetch("https://slack.com/api/search.messages?" + params, {
-      headers: { Authorization: "Bearer " + token },
-    });
-    const data = await res.json();
+    // Slack apps now get granular search scopes (search:read.public, .private,
+    // .im, .mpim) instead of the legacy search:read, so search.messages is
+    // unavailable to them -- assistant.search.context is the method those
+    // scopes unlock. Ask for every conversation type; if the token lacks the
+    // private/DM scopes, retry public-only rather than fail outright.
+    const search = async (channelTypes) => {
+      const params = new URLSearchParams({
+        query: String(input.query || ""), limit: "20", channel_types: channelTypes,
+        sort: input.sort === "relevance" ? "score" : "timestamp", sort_dir: "desc",
+      });
+      const res = await fetch("https://slack.com/api/assistant.search.context?" + params, {
+        headers: { Authorization: "Bearer " + token },
+      });
+      return { res, data: await res.json() };
+    };
+    let { res, data } = await search("public_channel,private_channel,mpim,im");
+    let publicOnly = false;
+    if (!data.ok && data.error === "missing_scope") {
+      ({ res, data } = await search("public_channel"));
+      publicOnly = true;
+    }
     if (!data.ok) return slackError("Slack search failed", data, res);
-    const matches = (data.messages && data.messages.matches) || [];
-    if (!matches.length) return "No Slack messages matched that search.";
+    const matches = (data.results && data.results.messages) || [];
+    if (!matches.length) return "No Slack messages matched that search." + (publicOnly ? " (Searched public channels only.)" : "");
     const text = matches.map((m) => {
-      const chan = m.channel ? ("#" + m.channel.name + " (ID: " + m.channel.id + ")") : "unknown channel";
-      return "Channel: " + chan + " | " + (m.username || m.user || "unknown") + " | " + m.ts + "\n" + (m.text || "");
+      const chan = m.channel_name ? ("#" + m.channel_name + " (ID: " + m.channel_id + ")") : "unknown channel";
+      return "Channel: " + chan + " | " + (m.author_name || m.author_user_id || "unknown") + " | " + m.message_ts +
+        "\n" + (m.content || "");
     }).join("\n\n");
-    return truncate(text, 6000);
+    return truncate((publicOnly ? "(Public channels only -- the Slack token lacks private/DM search scopes.)\n\n" : "") + text, 6000);
   }
 
   async function tReadSlackChannel(input) {
