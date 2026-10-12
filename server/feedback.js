@@ -33,7 +33,10 @@ module.exports = function mountFeedback(app, db) {
   const ZOOM_USER_ID = process.env.ZOOM_USER_ID; // whose recordings to search -- S2S has no "me"
 
   function baseUrl(req) {
-    return req.protocol + "://" + req.get("host");
+    // Railway terminates TLS in front of this process, so req.protocol is
+    // always "http" -- OAuth providers need the https URL users actually hit.
+    const proto = (req.get("x-forwarded-proto") || req.protocol).split(",")[0].trim();
+    return proto + "://" + req.get("host");
   }
 
   // ---- OAuth: Slack -------------------------------------------------------
