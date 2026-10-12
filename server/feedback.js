@@ -237,6 +237,15 @@ module.exports = function mountFeedback(app, db) {
 
   // ---- the 6 tools, against real REST APIs instead of MCP ------------------
 
+  // Slack's missing_scope reply says which scope the call needed and which the
+  // token actually has -- surface both so the cause is visible, not guessed.
+  function slackError(prefix, data, res) {
+    let msg = prefix + ": " + (data.error || res.status);
+    if (data.needed) msg += " (needs: " + data.needed + ")";
+    if (data.provided) msg += " (token has: " + data.provided + ")";
+    return msg;
+  }
+
   async function tSearchSlack(input) {
     const token = await slackAccessToken();
     if (!token) return "Slack isn't connected yet.";
@@ -248,7 +257,7 @@ module.exports = function mountFeedback(app, db) {
       headers: { Authorization: "Bearer " + token },
     });
     const data = await res.json();
-    if (!data.ok) return "Slack search failed: " + (data.error || res.status);
+    if (!data.ok) return slackError("Slack search failed", data, res);
     const matches = (data.messages && data.messages.matches) || [];
     if (!matches.length) return "No Slack messages matched that search.";
     const text = matches.map((m) => {
@@ -269,7 +278,7 @@ module.exports = function mountFeedback(app, db) {
       headers: { Authorization: "Bearer " + token },
     });
     const data = await res.json();
-    if (!data.ok) return "Reading that channel failed: " + (data.error || res.status);
+    if (!data.ok) return slackError("Reading that channel failed", data, res);
     const msgs = data.messages || [];
     const text = msgs.map((m) => (m.user || "unknown") + " | " + m.ts + "\n" + (m.text || "")).join("\n\n");
     return truncate(text || "No messages found.", 5000);
