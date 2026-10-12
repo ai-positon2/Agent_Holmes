@@ -507,11 +507,22 @@ module.exports = function mountFeedback(app, db) {
       "tool found nothing, rather than inventing an answer.";
   }
 
-  async function callClaude(messages) {
+  const MAX_TOOL_ROUNDS = 10;
+
+  async function callClaude(messages, { final = false } = {}) {
+    const body = {
+      model: ANTHROPIC_MODEL, max_tokens: 2048, messages, tools: TOOLS_SPEC,
+      system: instructions() + "\n\nYou have at most " + MAX_TOOL_ROUNDS + " rounds of tool calls per question, " +
+        "so make several independent calls in the same round rather than one at a time, and stop searching " +
+        "once you have enough to answer." +
+        (final ? "\n\nYour tool budget is used up. Answer NOW from what you have already found, and say " +
+          "plainly which parts of the question you could not cover." : ""),
+    };
+    if (final) body.tool_choice = { type: "none" };
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
       headers: { "content-type": "application/json", "x-api-key": ANTHROPIC_API_KEY, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({ model: ANTHROPIC_MODEL, max_tokens: 2048, system: instructions(), messages, tools: TOOLS_SPEC }),
+      body: JSON.stringify(body),
     });
     if (!res.ok) throw new Error("Anthropic API error " + res.status + ": " + (await res.text()).slice(0, 300));
     return res.json();
@@ -520,7 +531,7 @@ module.exports = function mountFeedback(app, db) {
   async function runToolLoop(userMessages) {
     const toolsUsed = [];
     let messages = userMessages.slice();
-    for (let round = 0; round < 6; round++) {
+    for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
       const result = await callClaude(messages);
       const blocks = result.content || [];
       if (result.stop_reason !== "tool_use") {
@@ -528,9 +539,7 @@ module.exports = function mountFeedback(app, db) {
         return { text, toolsUsed };
       }
       messages.push({ role: "assistant", content: blocks });
-      const toolResults = [];
-      for (const block of blocks) {
-        if (block.type !== "tool_use") continue;
+      const toolResults = await Promise.all(blocks.filter((b) => b.type === "tool_use").map(async (block) => {
         toolsUsed.push(block.name);
         let content;
         try {
@@ -539,11 +548,15 @@ module.exports = function mountFeedback(app, db) {
         } catch (e) {
           content = "Error: " + String((e && e.message) || e);
         }
-        toolResults.push({ type: "tool_result", tool_use_id: block.id, content: String(content) });
-      }
+        return { type: "tool_result", tool_use_id: block.id, content: String(content) };
+      }));
       messages.push({ role: "user", content: toolResults });
     }
-    return { text: "Reached the tool-call limit for this question -- try breaking it into smaller parts.", toolsUsed };
+    // Out of rounds: rather than discarding everything gathered so far, make
+    // one last call with tools switched off and have it answer from that.
+    const last = await callClaude(messages, { final: true });
+    const text = (last.content || []).filter((b) => b.type === "text").map((b) => b.text).join("");
+    return { text: text || "Reached the tool-call limit for this question -- try breaking it into smaller parts.", toolsUsed };
   }
 
   app.post("/api/feedback/chat", async (req, res) => {
